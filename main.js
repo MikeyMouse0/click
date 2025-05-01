@@ -1,5 +1,5 @@
 // --- Константы ---
-const ADMIN_IDS = ['808001329', '6201881953', '7079704828']; // как в твоём коде
+const ADMIN_IDS = ['808001329', '6201881953', '7079704828'];
 const CASE_TYPES = [
   { name: 'Обычный', chance: 0.7 },
   { name: 'Эпичный', chance: 0.2 },
@@ -117,8 +117,13 @@ function renderLogin() {
     let user = getUser(id);
     if (!user) {
       user = { id, balance: 0, keys: 0, ref_code: generateCode(), refferer_id: null, isAdmin: ADMIN_IDS.includes(id), online: true };
-      saveUser(user);
-      // Реферал
+    } else {
+      // Всегда обновляем isAdmin при входе!
+      user.isAdmin = ADMIN_IDS.includes(id);
+    }
+    saveUser(user);
+    // Реферал
+    if (!user.refferer_id) {
       const ref = document.getElementById('refCode').value.trim();
       if (ref) {
         const refUser = getAllUsers().find(u => u.ref_code === ref && u.id !== id);
@@ -147,7 +152,7 @@ function renderMain() {
   setLastActivity(currentUser.id);
   let html = `
     <h2>Steam Key Drop</h2>
-    <div class="card">Вы вошли как <b>${currentUser.id}</b> ${currentUser.isAdmin ? '<span class="admin">(админ)</span>' : ''}</div>
+    <div class="card">Вы вошли как <b>${currentUser.id}</b> ${currentUser.isAdmin ? '<span class="admin">admin</span>' : ''}</div>
     <button id="profileBtn">Профиль</button>
     <button id="bonusBtn">Бонусы</button>
     <button id="marketBtn">Маркет</button>
@@ -437,7 +442,7 @@ function renderUsers() {
     <div class="card">
       <h3>Пользователи</h3>
       <ul>
-        ${users.map(u => `<li>${u.id} — рефералов: ${u.balance}, кейсов: ${u.keys}, реф. код: ${u.ref_code}${u.isAdmin ? ' <span class="admin">(админ)</span>' : ''}</li>`).join('')}
+        ${users.map(u => `<li>${u.id} — рефералов: ${u.balance}, кейсов: ${u.keys}, реф. код: ${u.ref_code}${u.isAdmin ? ' <span class="admin">admin</span>' : ''}</li>`).join('')}
       </ul>
     </div>
   `;
@@ -540,7 +545,7 @@ function renderSearchUser() {
         <b>Рефералов:</b> ${user.balance}<br>
         <b>Кейсов:</b> ${user.keys}<br>
         <b>Реф. код:</b> ${user.ref_code}<br>
-        ${user.isAdmin ? '<span class="admin">(админ)</span>' : ''}
+        ${user.isAdmin ? '<span class="admin">admin</span>' : ''}
       </div>
     `;
   };
