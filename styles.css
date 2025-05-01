@@ -1,106 +1,146 @@
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #000;
-  color: #fff;
+  font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+  background: #0a0a13;
+  color: #e0e0e0;
   margin: 0;
+  min-height: 100vh;
+  letter-spacing: 0.01em;
 }
 #app {
-  max-width: 480px;
+  max-width: 430px;
   margin: 40px auto;
-  background: #111;
-  padding: 32px 20px 24px 20px;
+  background: rgba(20,22,40,0.98);
+  padding: 0 0 24px 0;
   border-radius: 18px;
   min-height: 600px;
-  border: 1px solid #222;
+  box-shadow: 0 0 32px #00ffe7a0, 0 0 0 2px #1a1a2f;
+  border: 1px solid #1a1a2f;
+  overflow: hidden;
 }
 h2, h3 {
-  color: #fff;
+  color: #00ffe7;
   font-weight: 700;
-  letter-spacing: 0.01em;
   margin-top: 0;
+  text-shadow: 0 0 8px #00ffe7, 0 0 2px #fff;
+  letter-spacing: 0.04em;
 }
 input, select, button, textarea {
-  background: #000;
+  background: #181a2b;
   color: #fff;
-  border: 1px solid #444;
-  border-radius: 6px;
+  border: 1.5px solid #00ffe7;
+  border-radius: 7px;
   padding: 10px;
   margin: 8px 0;
   font-size: 1em;
   outline: none;
-  transition: border 0.2s, background 0.2s;
+  transition: border 0.2s, background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 8px #00ffe733;
 }
 input:focus, select:focus, textarea:focus {
-  border-color: #fff;
-  background: #111;
+  border-color: #ff00c8;
+  background: #23243a;
+  box-shadow: 0 0 12px #ff00c8a0;
 }
 button {
-  background: #fff;
-  color: #000;
+  background: linear-gradient(90deg, #00ffe7 0%, #ff00c8 100%);
+  color: #181a2b;
   font-weight: bold;
   border: none;
   cursor: pointer;
   margin: 10px 0;
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 12px 0;
   width: 100%;
   font-size: 1.1em;
   letter-spacing: 0.02em;
-  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 0 12px #00ffe7a0;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 button:hover, button:focus {
-  background: #222;
+  background: linear-gradient(90deg, #ff00c8 0%, #00ffe7 100%);
   color: #fff;
+  box-shadow: 0 0 16px #ff00c8a0;
 }
 .card {
-  background: #111;
+  background: #181a2b;
   border-radius: 12px;
-  border: 1px solid #222;
+  border: 1.5px solid #00ffe7;
   padding: 18px 16px;
   margin: 18px 0;
+  box-shadow: 0 0 12px #00ffe733;
 }
 input[readonly] {
-  background: #111;
-  color: #888;
-  border: 1px solid #333;
+  background: #23243a;
+  color: #00ffe7;
+  border: 1.5px solid #23243a;
 }
 .admin {
-  color: #fff;
-  background: #000;
-  border: 1px solid #fff;
+  color: #ff00c8;
+  background: #23243a;
+  border: 1.5px solid #ff00c8;
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 0.95em;
   margin-left: 6px;
+  text-shadow: 0 0 6px #ff00c8;
 }
 .log {
   font-size: 0.95em;
-  color: #888;
-  border-bottom: 1px solid #222;
+  color: #bdbdbd;
+  border-bottom: 1px solid #23243a;
   padding: 2px 0;
 }
 .case-key {
   font-family: monospace;
-  background: #000;
-  color: #fff;
-  border: 1px solid #444;
+  background: #23243a;
+  color: #00ffe7;
+  border: 1.5px solid #00ffe7;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 1.1em;
+  box-shadow: 0 0 8px #00ffe733;
 }
 ul, li {
   margin: 0;
   padding: 0 0 0 18px;
 }
+.tabs {
+  display: flex;
+  background: #10111a;
+  border-bottom: 2px solid #00ffe7;
+  box-shadow: 0 2px 8px #00ffe733;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 18px 0 12px 0;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #00ffe7;
+  background: none;
+  border: none;
+  outline: none;
+  transition: background 0.2s, color 0.2s;
+  letter-spacing: 0.04em;
+  border-right: 1px solid #23243a;
+}
+.tab:last-child { border-right: none; }
+.tab.active, .tab:hover {
+  background: #181a2b;
+  color: #ff00c8;
+  text-shadow: 0 0 8px #ff00c8;
+}
 ::-webkit-scrollbar {
   width: 8px;
-  background: #111;
+  background: #181a2b;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222;
+  background: #00ffe7;
   border-radius: 8px;
 }
 @media (max-width: 600px) {
-  #app { padding: 10px; }
-  button { font-size: 1em; }
+  #app { padding: 0; }
+  .card { margin: 10px 0; }
+  .tabs { font-size: 0.95em; }
 }
