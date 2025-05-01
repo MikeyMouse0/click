@@ -100,6 +100,25 @@ function generateCode(len = 8) {
 // --- UI ---
 const app = document.getElementById('app');
 let currentUser = null;
+let currentTab = 'market'; // market, profile, other, admin
+
+function renderTabs() {
+  let tabs = [
+    { id: 'market', label: 'Маркет' },
+    { id: 'profile', label: 'Профиль' },
+    { id: 'other', label: 'Другое' }
+  ];
+  if (currentUser && currentUser.isAdmin) {
+    tabs.push({ id: 'admin', label: 'Админ' });
+  }
+  return `
+    <div class="tabs">
+      ${tabs.map(tab => `
+        <button class="tab${currentTab === tab.id ? ' active' : ''}" id="tab-${tab.id}">${tab.label}</button>
+      `).join('')}
+    </div>
+  `;
+}
 
 function renderLogin() {
   app.innerHTML = `
@@ -118,11 +137,9 @@ function renderLogin() {
     if (!user) {
       user = { id, balance: 0, keys: 0, ref_code: generateCode(), refferer_id: null, isAdmin: ADMIN_IDS.includes(id), online: true };
     } else {
-      // Всегда обновляем isAdmin при входе!
       user.isAdmin = ADMIN_IDS.includes(id);
     }
     saveUser(user);
-    // Реферал
     if (!user.refferer_id) {
       const ref = document.getElementById('refCode').value.trim();
       if (ref) {
@@ -138,6 +155,7 @@ function renderLogin() {
     }
     currentUser = user;
     setLastActivity(currentUser.id);
+    currentTab = 'market';
     renderMain();
   };
   document.getElementById('resetBtn').onclick = () => {
@@ -150,89 +168,21 @@ function renderLogin() {
 
 function renderMain() {
   setLastActivity(currentUser.id);
-  let html = `
-    <h2>Steam Key Drop</h2>
-    <div class="card">Вы вошли как <b>${currentUser.id}</b> ${currentUser.isAdmin ? '<span class="admin">admin</span>' : ''}</div>
-    <button id="profileBtn">Профиль</button>
-    <button id="bonusBtn">Бонусы</button>
-    <button id="marketBtn">Маркет</button>
-    <button id="helpBtn">Помощь</button>
-    <button id="logsBtn">Логи</button>
-    <button id="logoutBtn" style="float:right;">Выйти</button>
-    <hr>
-  `;
-  if (currentUser.isAdmin) {
-    html += `
-      <div class="card"><b>Админ-панель:</b><br>
-      <button id="addKeysBtn">Добавить ключи</button>
-      <button id="promoBtn">Создать промокод</button>
-      <button id="allKeysBtn">Список ключей</button>
-      <button id="usersBtn">Пользователи</button>
-      <button id="broadcastBtn">Рассылка</button>
-      <button id="searchUserBtn">Поиск пользователя</button>
-      <button id="onlineBtn">Онлайн</button>
-      </div>
-    `;
-  } else {
-    html += `<button id="sendRefBtn">Отправить рефералы</button>`;
-  }
-  app.innerHTML = html;
-  document.getElementById('profileBtn').onclick = renderProfile;
-  document.getElementById('bonusBtn').onclick = renderBonus;
-  document.getElementById('marketBtn').onclick = renderMarket;
-  document.getElementById('helpBtn').onclick = renderHelp;
-  document.getElementById('logsBtn').onclick = renderLogs;
-  document.getElementById('logoutBtn').onclick = () => { currentUser = null; renderLogin(); };
-  if (currentUser.isAdmin) {
-    document.getElementById('addKeysBtn').onclick = renderAddKeys;
-    document.getElementById('promoBtn').onclick = renderPromo;
-    document.getElementById('allKeysBtn').onclick = renderAllKeys;
-    document.getElementById('usersBtn').onclick = renderUsers;
-    document.getElementById('broadcastBtn').onclick = renderBroadcast;
-    document.getElementById('searchUserBtn').onclick = renderSearchUser;
-    document.getElementById('onlineBtn').onclick = renderOnline;
-  } else {
-    document.getElementById('sendRefBtn').onclick = renderSendReferrals;
-  }
-}
-
-function renderProfile() {
-  setLastActivity(currentUser.id);
-  const refLink = location.href.split('#')[0] + `?ref=${currentUser.ref_code}`;
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
-    <div class="card">
-      <h3>Профиль</h3>
-      <div>Имя: <b>${currentUser.id}</b></div>
-      <div>Рефералов: <b>${currentUser.balance}</b></div>
-      <div>Куплено кейсов: <b>${currentUser.keys}</b></div>
-      <div>Ваша реферальная ссылка:<br>
-        <input value="${refLink}" readonly style="width:100%">
-      </div>
-    </div>
-  `;
-}
-
-function renderBonus() {
-  setLastActivity(currentUser.id);
-  const refLink = location.href.split('#')[0] + `?ref=${currentUser.ref_code}`;
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
-    <div class="card">
-      <h3>Бонусы</h3>
-      <div>Приглашайте друзей по ссылке и получайте рефералы!</div>
-      <div>Ваша реферальная ссылка:<br>
-        <input value="${refLink}" readonly style="width:100%">
-      </div>
-      <div>За 5 рефералов — 1 кейс.</div>
-    </div>
-  `;
+  app.innerHTML = renderTabs() + `<div id="tab-content"></div>`;
+  // Навигация по вкладкам
+  ['market', 'profile', 'other', 'admin'].forEach(tab => {
+    const btn = document.getElementById('tab-' + tab);
+    if (btn) btn.onclick = () => { currentTab = tab; renderMain(); };
+  });
+  // Контент вкладки
+  if (currentTab === 'market') renderMarket();
+  else if (currentTab === 'profile') renderProfile();
+  else if (currentTab === 'other') renderOther();
+  else if (currentTab === 'admin') renderAdmin();
 }
 
 function renderMarket() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('tab-content').innerHTML = `
     <div class="card">
       <h3>Маркет</h3>
       <div>Ваш баланс рефералов: <b>${currentUser.balance}</b></div>
@@ -246,7 +196,6 @@ function renderMarket() {
       document.getElementById('marketResult').innerHTML = 'Недостаточно рефералов!';
       return;
     }
-    // Выбор кейса
     let roll = Math.random();
     let acc = 0, caseType = CASE_TYPES[0].name;
     for (let ct of CASE_TYPES) {
@@ -309,10 +258,108 @@ function renderMarket() {
   };
 }
 
+function renderProfile() {
+  const refLink = location.href.split('#')[0] + `?ref=${currentUser.ref_code}`;
+  document.getElementById('tab-content').innerHTML = `
+    <div class="card">
+      <h3>Профиль</h3>
+      <div>Имя: <b>${currentUser.id}</b> ${currentUser.isAdmin ? '<span class="admin">admin</span>' : ''}</div>
+      <div>Рефералов: <b>${currentUser.balance}</b></div>
+      <div>Куплено кейсов: <b>${currentUser.keys}</b></div>
+      <div>Ваша реферальная ссылка:<br>
+        <input value="${refLink}" readonly style="width:100%">
+      </div>
+      <button id="logoutBtn">Выйти</button>
+    </div>
+  `;
+  document.getElementById('logoutBtn').onclick = () => { currentUser = null; renderLogin(); };
+}
+
+function renderOther() {
+  document.getElementById('tab-content').innerHTML = `
+    <div class="card">
+      <h3>Другое</h3>
+      <button id="bonusBtn">Бонусы</button>
+      <button id="logsBtn">Логи</button>
+      <button id="sendRefBtn">Отправить рефералы</button>
+      <button id="helpBtn">Помощь</button>
+      <div id="otherContent"></div>
+    </div>
+  `;
+  document.getElementById('bonusBtn').onclick = renderBonus;
+  document.getElementById('logsBtn').onclick = renderLogs;
+  document.getElementById('sendRefBtn').onclick = renderSendReferrals;
+  document.getElementById('helpBtn').onclick = renderHelp;
+}
+
+function renderBonus() {
+  const refLink = location.href.split('#')[0] + `?ref=${currentUser.ref_code}`;
+  document.getElementById('otherContent').innerHTML = `
+    <div class="card">
+      <h3>Бонусы</h3>
+      <div>Приглашайте друзей по ссылке и получайте рефералы!</div>
+      <div>Ваша реферальная ссылка:<br>
+        <input value="${refLink}" readonly style="width:100%">
+      </div>
+      <div>За 5 рефералов — 1 кейс.</div>
+    </div>
+  `;
+}
+
+function renderLogs() {
+  const logs = getLogs();
+  document.getElementById('otherContent').innerHTML = `
+    <div class="card">
+      <h3>Логи</h3>
+      <div>${logs.map(l => `<div class="log">${l.time}: ${l.text}</div>`).join('') || 'Логов нет.'}</div>
+    </div>
+  `;
+}
+
+function renderSendReferrals() {
+  document.getElementById('otherContent').innerHTML = `
+    <div class="card">
+      <h3>Отправить рефералы</h3>
+      <form id="sendRefForm">
+        <label>ID получателя:<br><input id="refRecipient"></label><br>
+        <label>Сколько рефералов:<br><input id="refAmount" type="number" min="1"></label><br>
+        <button>Отправить</button>
+      </form>
+      <div id="sendRefResult"></div>
+    </div>
+  `;
+  document.getElementById('sendRefForm').onsubmit = e => {
+    e.preventDefault();
+    const recipientId = document.getElementById('refRecipient').value.trim();
+    const amount = Number(document.getElementById('refAmount').value);
+    if (!recipientId || !amount || amount <= 0) {
+      document.getElementById('sendRefResult').innerHTML = 'Введите корректные данные!';
+      return;
+    }
+    if (recipientId === currentUser.id) {
+      document.getElementById('sendRefResult').innerHTML = 'Нельзя отправить себе!';
+      return;
+    }
+    const recipient = getUser(recipientId);
+    if (!recipient) {
+      document.getElementById('sendRefResult').innerHTML = 'Пользователь не найден!';
+      return;
+    }
+    if (currentUser.balance < amount) {
+      document.getElementById('sendRefResult').innerHTML = 'Недостаточно рефералов!';
+      return;
+    }
+    currentUser.balance -= amount;
+    saveUser(currentUser);
+    recipient.balance += amount;
+    saveUser(recipient);
+    addLog({ time: new Date().toLocaleString(), text: `${currentUser.id} отправил ${amount} рефералов пользователю ${recipientId}` });
+    document.getElementById('sendRefResult').innerHTML = `Успешно отправлено!`;
+  };
+}
+
 function renderHelp() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('otherContent').innerHTML = `
     <div class="card">
       <h3>Помощь</h3>
       <ul>
@@ -324,22 +371,31 @@ function renderHelp() {
   `;
 }
 
-function renderLogs() {
-  setLastActivity(currentUser.id);
-  const logs = getLogs();
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+function renderAdmin() {
+  document.getElementById('tab-content').innerHTML = `
     <div class="card">
-      <h3>Логи</h3>
-      <div>${logs.map(l => `<div class="log">${l.time}: ${l.text}</div>`).join('') || 'Логов нет.'}</div>
+      <h3>Админ-панель</h3>
+      <button id="addKeysBtn">Добавить ключи</button>
+      <button id="promoBtn">Создать промокод</button>
+      <button id="allKeysBtn">Список ключей</button>
+      <button id="usersBtn">Пользователи</button>
+      <button id="broadcastBtn">Рассылка</button>
+      <button id="searchUserBtn">Поиск пользователя</button>
+      <button id="onlineBtn">Онлайн</button>
+      <div id="adminContent"></div>
     </div>
   `;
+  document.getElementById('addKeysBtn').onclick = renderAddKeys;
+  document.getElementById('promoBtn').onclick = renderPromo;
+  document.getElementById('allKeysBtn').onclick = renderAllKeys;
+  document.getElementById('usersBtn').onclick = renderUsers;
+  document.getElementById('broadcastBtn').onclick = renderBroadcast;
+  document.getElementById('searchUserBtn').onclick = renderSearchUser;
+  document.getElementById('onlineBtn').onclick = renderOnline;
 }
 
 function renderAddKeys() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Добавить ключи</h3>
       <form id="addKeysForm">
@@ -371,9 +427,7 @@ function renderAddKeys() {
 }
 
 function renderPromo() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Создать промокод</h3>
       <form id="promoForm">
@@ -421,9 +475,7 @@ function renderPromo() {
 }
 
 function renderAllKeys() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Список ключей</h3>
       ${CASE_TYPES.map(ct => {
@@ -435,10 +487,8 @@ function renderAllKeys() {
 }
 
 function renderUsers() {
-  setLastActivity(currentUser.id);
   const users = getAllUsers();
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Пользователи</h3>
       <ul>
@@ -449,9 +499,7 @@ function renderUsers() {
 }
 
 function renderBroadcast() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Рассылка</h3>
       <form id="broadcastForm">
@@ -461,7 +509,6 @@ function renderBroadcast() {
       <div id="broadcastResult"></div>
     </div>
   `;
-
   document.getElementById('broadcastForm').onsubmit = e => {
     e.preventDefault();
     const msg = document.getElementById('broadcastMsg').value.trim();
@@ -480,54 +527,8 @@ function renderBroadcast() {
   };
 }
 
-function renderSendReferrals() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
-    <div class="card">
-      <h3>Отправить рефералы</h3>
-      <form id="sendRefForm">
-        <label>ID получателя:<br><input id="refRecipient"></label><br>
-        <label>Сколько рефералов:<br><input id="refAmount" type="number" min="1"></label><br>
-        <button>Отправить</button>
-      </form>
-      <div id="sendRefResult"></div>
-    </div>
-  `;
-  document.getElementById('sendRefForm').onsubmit = e => {
-    e.preventDefault();
-    const recipientId = document.getElementById('refRecipient').value.trim();
-    const amount = Number(document.getElementById('refAmount').value);
-    if (!recipientId || !amount || amount <= 0) {
-      document.getElementById('sendRefResult').innerHTML = 'Введите корректные данные!';
-      return;
-    }
-    if (recipientId === currentUser.id) {
-      document.getElementById('sendRefResult').innerHTML = 'Нельзя отправить себе!';
-      return;
-    }
-    const recipient = getUser(recipientId);
-    if (!recipient) {
-      document.getElementById('sendRefResult').innerHTML = 'Пользователь не найден!';
-      return;
-    }
-    if (currentUser.balance < amount) {
-      document.getElementById('sendRefResult').innerHTML = 'Недостаточно рефералов!';
-      return;
-    }
-    currentUser.balance -= amount;
-    saveUser(currentUser);
-    recipient.balance += amount;
-    saveUser(recipient);
-    addLog({ time: new Date().toLocaleString(), text: `${currentUser.id} отправил ${amount} рефералов пользователю ${recipientId}` });
-    document.getElementById('sendRefResult').innerHTML = `Успешно отправлено!`;
-  };
-}
-
 function renderSearchUser() {
-  setLastActivity(currentUser.id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Поиск пользователя</h3>
       <form id="searchUserForm">
@@ -558,14 +559,12 @@ function renderSearchUser() {
 }
 
 function renderOnline() {
-  setLastActivity(currentUser.id);
   const lastActivity = getLastActivity();
   const now = Date.now();
   const onlineUsers = Object.entries(lastActivity)
     .filter(([id, ts]) => now - ts < 10 * 60 * 1000)
     .map(([id]) => id);
-  app.innerHTML = `
-    <button onclick="renderMain()">Назад</button>
+  document.getElementById('adminContent').innerHTML = `
     <div class="card">
       <h3>Онлайн (за 10 минут):</h3>
       ${onlineUsers.length ? onlineUsers.join(', ') : 'Нет активных пользователей.'}
@@ -575,7 +574,6 @@ function renderOnline() {
 
 // --- Запуск ---
 (function() {
-  // Если есть реф. код в URL — подставить в форму
   const params = new URLSearchParams(location.search);
   const ref = params.get('ref');
   if (!currentUser) renderLogin();
@@ -583,5 +581,4 @@ function renderOnline() {
     const refInput = document.getElementById('refCode');
     if (refInput) refInput.value = ref;
   }, 100);
-  window.renderMain = renderMain; // для кнопок "Назад"
 })();
