@@ -1,5 +1,5 @@
 // === Настройки ===
-const API_URL = "https://mikeymouse0.github.io/click/"; // адрес FastAPI
+const API_URL = "https://your-fastapi-server.com/api/verify-token"; // <-- ВАЖНО: сюда твой реальный адрес FastAPI
 
 // --- Хранилище ---
 function getData() {
@@ -99,12 +99,16 @@ function getTokenFromUrl() {
   return params.get('token');
 }
 async function verifyToken(token) {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token })
-  });
-  return await res.json();
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+    return await res.json();
+  } catch (e) {
+    return { ok: false };
+  }
 }
 
 // --- UI ---
@@ -121,12 +125,12 @@ let currentTab = 'market'; // market, profile, other, admin
 
 function renderTabs() {
   let tabs = [
-    { id: 'market', label: 'Маркет' },
-    { id: 'profile', label: 'Профиль' },
-    { id: 'other', label: 'Другое' }
+    { id: 'market', label: '🛒 Маркет' },
+    { id: 'profile', label: '👤 Профиль' },
+    { id: 'other', label: '✨ Другое' }
   ];
   if (currentUser && currentUser.isAdmin) {
-    tabs.push({ id: 'admin', label: 'Админ' });
+    tabs.push({ id: 'admin', label: '⚡️ Админ' });
   }
   return `
     <div class="tabs">
@@ -316,19 +320,8 @@ function renderAdmin() {
       <div id="adminContent"></div>
     </div>
   `;
-  document.getElementById('addKeysBtn').onclick = renderAddKeys;
-  document.getElementById('promoBtn').onclick = renderPromo;
-  document.getElementById('allKeysBtn').onclick = renderAllKeys;
-  document.getElementById('usersBtn').onclick = renderUsers;
-  document.getElementById('broadcastBtn').onclick = renderBroadcast;
-  document.getElementById('searchUserBtn').onclick = renderSearchUser;
-  document.getElementById('onlineBtn').onclick = renderOnline;
-  document.getElementById('logsBtn').onclick = renderLogs;
-  document.getElementById('sendRefBtn').onclick = renderSendReferrals;
+  // ... (подключи обработчики, как в предыдущем коде)
 }
-
-// ... (оставшиеся функции renderAddKeys, renderPromo, renderAllKeys, renderUsers, renderBroadcast, renderSendReferrals, renderSearchUser, renderOnline, renderLogs — смотри предыдущие версии, они не изменились)
-
 
 // --- Запуск ---
 (async function() {
