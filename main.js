@@ -456,11 +456,12 @@ function renderBroadcast() {
       <h3>Рассылка</h3>
       <form id="broadcastForm">
         <textarea id="broadcastMsg" rows="3" style="width:100%" placeholder="Текст рассылки"></textarea><br>
-        <button>Отправить</button>
+        <button type="submit">Отправить</button>
       </form>
       <div id="broadcastResult"></div>
     </div>
   `;
+
   document.getElementById('broadcastForm').onsubmit = e => {
     e.preventDefault();
     const msg = document.getElementById('broadcastMsg').value.trim();
@@ -469,7 +470,12 @@ function renderBroadcast() {
       return;
     }
     const users = getAllUsers();
-    users.forEach(u => addLog({ time: new Date().toLocaleString(), text: `Рассылка для ${u.id}: ${msg}` }));
+    users.forEach(u => {
+      addLog({
+        time: new Date().toLocaleString(),
+        text: `Рассылка для ${u.id}: ${msg}`
+      });
+    });
     document.getElementById('broadcastResult').innerHTML = `Рассылка отправлена ${users.length} пользователям (в логах).`;
   };
 }
