@@ -1,8 +1,7 @@
-const app = document.getElementById('app');
-app.innerHTML = '<h1>UI работает!</h1>';
-
 // === Настройки ===
 const API_URL = "https://your-fastapi-server.com/api/verify-token"; // <-- ВАЖНО: сюда твой реальный адрес FastAPI
+
+const app = document.getElementById('app'); // <-- Только здесь!
 
 // --- Хранилище ---
 function getData() {
