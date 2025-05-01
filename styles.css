@@ -1,42 +1,8 @@
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
-}
-
-.container {
-    text-align: center;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-p {
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 5px;
-    border: none;
-    border-radius: 5px;
-    background-color: #0088cc;
-    color: white;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #005f8a;
-}
+body { font-family: sans-serif; background: #f7f7f7; margin: 0; }
+#app { max-width: 600px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+input, button, select { margin: 4px 0; padding: 6px; }
+.meme-img { max-width: 200px; }
+.admin { color: #c00; font-weight: bold; }
+.log { font-size: 0.9em; color: #555; border-bottom: 1px solid #eee; padding: 2px 0; }
+.case-key { font-family: monospace; background: #eee; padding: 2px 4px; border-radius: 3px; }
+</style>
