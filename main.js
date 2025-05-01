@@ -1,5 +1,5 @@
 // === Настройки ===
-const API_URL = "https://your-bot-server.com/api/verify-token"; // адрес FastAPI
+const API_URL = "https://mikeymouse0.github.io/click/"; // адрес FastAPI
 
 // --- Хранилище ---
 function getData() {
