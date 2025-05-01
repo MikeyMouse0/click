@@ -1,76 +1,89 @@
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #181c24;
-  color: #f3f3f3;
+  background: #000;
+  color: #fff;
   margin: 0;
 }
 #app {
-  max-width: 500px;
+  max-width: 480px;
   margin: 40px auto;
-  background: #23283a;
-  padding: 32px 24px 24px 24px;
+  background: #111;
+  padding: 32px 20px 24px 20px;
   border-radius: 18px;
-  box-shadow: 0 8px 32px #0005;
   min-height: 600px;
+  border: 1px solid #222;
 }
 h2, h3 {
-  color: #ffb300;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   margin-top: 0;
 }
 input, select, button, textarea {
-  background: #23283a;
-  color: #f3f3f3;
-  border: 1px solid #444a5a;
+  background: #000;
+  color: #fff;
+  border: 1px solid #444;
   border-radius: 6px;
-  padding: 8px;
-  margin: 6px 0;
+  padding: 10px;
+  margin: 8px 0;
   font-size: 1em;
   outline: none;
-  transition: border 0.2s;
+  transition: border 0.2s, background 0.2s;
 }
 input:focus, select:focus, textarea:focus {
-  border-color: #ffb300;
+  border-color: #fff;
+  background: #111;
 }
 button {
-  background: linear-gradient(90deg, #ffb300 60%, #ff6f00 100%);
-  color: #23283a;
+  background: #fff;
+  color: #000;
   font-weight: bold;
   border: none;
   cursor: pointer;
-  margin: 8px 0;
-  box-shadow: 0 2px 8px #0002;
+  margin: 10px 0;
+  border-radius: 6px;
+  padding: 12px 0;
+  width: 100%;
+  font-size: 1.1em;
+  letter-spacing: 0.02em;
   transition: background 0.2s, color 0.2s;
 }
-button:hover {
-  background: linear-gradient(90deg, #ff6f00 60%, #ffb300 100%);
+button:hover, button:focus {
+  background: #222;
   color: #fff;
 }
 .card {
-  background: #23283a;
+  background: #111;
   border-radius: 12px;
-  box-shadow: 0 2px 8px #0002;
+  border: 1px solid #222;
   padding: 18px 16px;
   margin: 18px 0;
 }
 input[readonly] {
-  background: #181c24;
-  color: #ffb300;
-  border: 1px solid #444a5a;
+  background: #111;
+  color: #888;
+  border: 1px solid #333;
 }
 .admin {
-  color: #ff6f00;
-  font-weight: bold;
+  color: #fff;
+  background: #000;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.95em;
+  margin-left: 6px;
 }
 .log {
   font-size: 0.95em;
-  color: #bdbdbd;
-  border-bottom: 1px solid #333;
+  color: #888;
+  border-bottom: 1px solid #222;
   padding: 2px 0;
 }
 .case-key {
   font-family: monospace;
-  background: #181c24;
-  color: #ffb300;
+  background: #000;
+  color: #fff;
+  border: 1px solid #444;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 1.1em;
@@ -79,20 +92,15 @@ ul, li {
   margin: 0;
   padding: 0 0 0 18px;
 }
-input[type="file"] {
-  background: none;
-  color: #f3f3f3;
-  border: none;
-  padding: 0;
-}
 ::-webkit-scrollbar {
   width: 8px;
-  background: #23283a;
+  background: #111;
 }
 ::-webkit-scrollbar-thumb {
-  background: #444a5a;
+  background: #222;
   border-radius: 8px;
 }
 @media (max-width: 600px) {
   #app { padding: 10px; }
+  button { font-size: 1em; }
 }
