@@ -1,13 +1,451 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Steam Key Drop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мемы Telegram</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Хедер */
+        .header {
+            background-color: #ffffff;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Основной контент */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Вкладка Мемы */
+        .memes-empty {
+            text-align: center;
+            color: #6b7280;
+            font-size: 16px;
+            margin-top: 50px;
+        }
+        .meme-card {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .meme-card h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .meme-card p {
+            margin: 0 0 10px;
+            color: #4b5563;
+            font-size: 14px;
+        }
+        .meme-card .tags {
+            color: #3b82f6;
+            font-size: 13px;
+        }
+        .meme-card .nsfw {
+            color: #ef4444;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .meme-card img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Форма создания мема */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #f9fafb;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px 0;
+        }
+        .form-group .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group input[type="checkbox"] {
+            width: auto;
+            accent-color: #3b82f6;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Вкладка профиля */
+        .profile-card {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .profile-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 2px solid #e5e7eb;
+        }
+        .profile-card h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .profile-card p {
+            color: #4b5563;
+            margin: 0 0 20px;
+            font-size: 14px;
+        }
+
+        /* Нижняя навигация */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #ffffff;
+            padding: 12px 0;
+            border-top: 1px solid #e5e7eb;
+            position: sticky;
+            bottom: 0;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+        }
+        .nav-item i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .content {
+                padding: 15px;
+            }
+            .header {
+                font-size: 20px;
+            }
+            .profile-card img {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="app"></div>
-  <script src="main.js"></script>
+    <div class="header">Мемы</div>
+    <div class="content" id="content"></div>
+    <div class="nav-bar">
+        <div class="nav-item active" data-tab="memes" onclick="switchTab('memes')">
+            <i class="fas fa-laugh"></i> Мемы
+        </div>
+        <div class="nav-item" data-tab="create" onclick="switchTab('create')">
+            <i class="fas fa-plus-circle"></i> Создать
+        </div>
+        <div class="nav-item" data-tab="profile" onclick="switchTab('profile')">
+            <i class="fas fa-user"></i> Профиль
+        </div>
+    </div>
+
+    <script>
+        // IndexedDB setup
+        const dbName = "MemeAppDB";
+        const dbVersion = 1;
+        let db;
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, dbVersion);
+
+                request.onupgradeneeded = function(event) {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains('memes')) {
+                        db.createObjectStore('memes', { keyPath: 'id', autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains('users')) {
+                        db.createObjectStore('users', { keyPath: 'id' });
+                    }
+                };
+
+                request.onsuccess = function(event) {
+                    db = event.target.result;
+                    resolve();
+                };
+
+                request.onerror = function(event) {
+                    reject('Ошибка IndexedDB: ' + event.target.errorCode);
+                };
+            });
+        }
+
+        // Database operations
+        async function addMeme(meme) {
+            const transaction = db.transaction(['memes'], 'readwrite');
+            const store = transaction.objectStore('memes');
+            return new Promise((resolve, reject) => {
+                const request = store.add(meme);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllMemes() {
+            const transaction = db.transaction(['memes'], 'readonly');
+            const store = transaction.objectStore('memes');
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getUser(userId = 1) {
+            const transaction = db.transaction(['users'], 'readonly');
+            const store = transaction.objectStore('users');
+            return new Promise((resolve, reject) => {
+                const request = store.get(userId);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function upsertUser(user) {
+            const transaction = db.transaction(['users'], 'readwrite');
+            const store = transaction.objectStore('users');
+            return new Promise((resolve, reject) => {
+                const request = store.put(user);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Templates for each tab
+        const templates = {
+            memes: async () => {
+                const memes = await getAllMemes();
+                return `
+                    <h2>Все мемы</h2>
+                    ${memes.length === 0 ? '<div class="memes-empty">Пока нет мемов. Создайте свой!</div>' : memes.map(meme => `
+                        <div class="meme-card">
+                            ${meme.photo ? `<img src="${meme.photo}" alt="Meme Image">` : ''}
+                            <h3>${meme.title}</h3>
+                            <p>${meme.description}</p>
+                            <div class="tags">Теги: ${meme.tags.join(", ")}</div>
+                            ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                        </div>
+                    `).join('')}
+                `;
+            },
+            create: () => `
+                <h2>Создать мем</h2>
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="meme-title" placeholder="Введите название мема">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="meme-desc" placeholder="Опишите ваш мем"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Теги (через запятую)</label>
+                    <input type="text" id="meme-tags" placeholder="например, юмор, коты">
+                </div>
+                <div class="form-group">
+                    <label>Изображение</label>
+                    <input type="file" id="meme-photo" accept="image/*">
+                </div>
+                <div class="form-group checkbox">
+                    <input type="checkbox" id="meme-nsfw">
+                    <label for="meme-nsfw">18+ контент</label>
+                </div>
+                <button class="submit-btn" onclick="createMeme()">Создать мем</button>
+            `,
+            profile: async () => {
+                let user = await getUser();
+                if (!user) {
+                    user = {
+                        id: 1,
+                        name: "Пользователь",
+                        photo: "https://via.placeholder.com/120",
+                        description: "Любитель мемов!"
+                    };
+                    await upsertUser(user);
+                }
+                return `
+                    <div class="profile-card">
+                        <img src="${user.photo}" alt="Фото профиля">
+                        <h2>${user.name}</h2>
+                        <p>${user.description}</p>
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="profile-name" placeholder="Введите имя">
+                        </div>
+                        <div class="form-group">
+                            <label>Описание</label>
+                            <textarea id="profile-desc" placeholder="Опишите себя"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Фото профиля</label>
+                            <input type="file" id="profile-photo" accept="image/*">
+                        </div>
+                        <button class="submit-btn" onclick="updateProfile()">Обновить профиль</button>
+                    </div>
+                `;
+            }
+        };
+
+        // Switch tabs
+        async function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.tab === tab) item.classList.add('active');
+            });
+            document.getElementById('content').innerHTML = await templates[tab]();
+        }
+
+        // Create meme
+        async function createMeme() {
+            const title = document.getElementById('meme-title').value;
+            const desc = document.getElementById('meme-desc').value;
+            const tags = document.getElementById('meme-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            const nsfw = document.getElementById('meme-nsfw').checked;
+            const photoInput = document.getElementById('meme-photo');
+
+            if (title && desc) {
+                const meme = {
+                    title,
+                    description: desc,
+                    tags,
+                    nsfw,
+                    createdAt: new Date().toISOString()
+                };
+
+                if (photoInput.files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        meme.photo = e.target.result;
+                        await addMeme(meme);
+                        alert('Мем создан!');
+                        switchTab('memes');
+                    };
+                    reader.readAsDataURL(photoInput.files[0]);
+                } else {
+                    await addMeme(meme);
+                    alert('Мем создан!');
+                    switchTab('memes');
+                }
+            } else {
+                alert('Заполните название и описание.');
+            }
+        }
+
+        // Update profile
+        async function updateProfile() {
+            const name = document.getElementById('profile-name').value;
+            const desc = document.getElementById('profile-desc').value;
+            const photoInput = document.getElementById('profile-photo');
+
+            let user = await getUser() || { id: 1, name: "Пользователь", photo: "https://via.placeholder.com/120", description: "Любитель мемов!" };
+
+            if (photoInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    user.photo = e.target.result;
+                    user.name = name || user.name;
+                    user.description = desc || user.description;
+                    await upsertUser(user);
+                    alert('Профиль обновлен!');
+                    switchTab('profile');
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                user.name = name || user.name;
+                user.description = desc || user.description;
+                await upsertUser(user);
+                alert('Профиль обновлен!');
+                switchTab('profile');
+            }
+        }
+
+        // Initialize Telegram Web App and DB
+        async function init() {
+            if (window.Telegram?.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+            }
+            await initDB();
+            switchTab('memes');
+        }
+
+        init();
+    </script>
 </body>
 </html>
