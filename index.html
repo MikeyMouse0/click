@@ -73,6 +73,15 @@
             border-radius: 8px;
             margin-bottom: 10px;
         }
+        .meme-card .author {
+            font-size: 14px;
+            color: #3b82f6;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .meme-card .author:hover {
+            text-decoration: underline;
+        }
 
         /* Форма создания мема */
         .form-group {
@@ -156,6 +165,47 @@
             font-size: 14px;
         }
 
+        /* Вкладка поиска */
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f9fafb;
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+        .user-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        .user-card h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .user-card p {
+            margin: 0;
+            color: #4b5563;
+            font-size: 13px;
+        }
+
         /* Нижняя навигация */
         .nav-bar {
             display: flex;
@@ -210,6 +260,9 @@
         <div class="nav-item" data-tab="create" onclick="switchTab('create')">
             <i class="fas fa-plus-circle"></i> Создать
         </div>
+        <div class="nav-item" data-tab="search" onclick="switchTab('search')">
+            <i class="fas fa-search"></i> Поиск
+        </div>
         <div class="nav-item" data-tab="profile" onclick="switchTab('profile')">
             <i class="fas fa-user"></i> Профиль
         </div>
@@ -220,6 +273,7 @@
         const dbName = "MemeAppDB";
         const dbVersion = 1;
         let db;
+        let currentUserId;
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -267,11 +321,26 @@
             });
         }
 
-        async function getUser(userId = 1) {
+        async function getMemesByUser(userId) {
+            const memes = await getAllMemes();
+            return memes.filter(meme => meme.userId === userId);
+        }
+
+        async function getUser(userId) {
             const transaction = db.transaction(['users'], 'readonly');
             const store = transaction.objectStore('users');
             return new Promise((resolve, reject) => {
                 const request = store.get(userId);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllUsers() {
+            const transaction = db.transaction(['users'], 'readonly');
+            const store = transaction.objectStore('users');
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
                 request.onsuccess = () => resolve(request.result);
                 request.onerror = () => reject(request.error);
             });
@@ -293,15 +362,19 @@
                 const memes = await getAllMemes();
                 return `
                     <h2>Все мемы</h2>
-                    ${memes.length === 0 ? '<div class="memes-empty">Пока нет мемов. Создайте свой!</div>' : memes.map(meme => `
-                        <div class="meme-card">
-                            ${meme.photo ? `<img src="${meme.photo}" alt="Meme Image">` : ''}
-                            <h3>${meme.title}</h3>
-                            <p>${meme.description}</p>
-                            <div class="tags">Теги: ${meme.tags.join(", ")}</div>
-                            ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
-                        </div>
-                    `).join('')}
+                    ${memes.length === 0 ? '<div class="memes-empty">Пока нет мемов. Создайте свой!</div>' : memes.map(async meme => {
+                        const user = await getUser(meme.userId);
+                        return `
+                            <div class="meme-card">
+                                ${meme.photo ? `<img src="${meme.photo}" alt="Meme Image">` : ''}
+                                <h3>${meme.title}</h3>
+                                <p>${meme.description}</p>
+                                <div class="tags">Теги: ${meme.tags.join(", ")}</div>
+                                ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                                <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
+                            </div>
+                        `;
+                    }).reduce(async (acc, curr) => (await acc) + (await curr), Promise.resolve(''))}
                 `;
             },
             create: () => `
@@ -328,17 +401,29 @@
                 </div>
                 <button class="submit-btn" onclick="createMeme()">Создать мем</button>
             `,
+            search: async () => {
+                const users = await getAllUsers();
+                return `
+                    <h2>Поиск людей</h2>
+                    <div class="search-bar">
+                        <input type="text" id="search-input" placeholder="Введите имя пользователя" oninput="searchUsers()">
+                    </div>
+                    <div id="search-results">
+                        ${users.map(user => `
+                            <div class="user-card" onclick="viewProfile(${user.id})">
+                                <img src="${user.photo}" alt="Фото профиля">
+                                <div>
+                                    <h3>${user.name}</h3>
+                                    <p>${user.description || 'Нет описания'}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
             profile: async () => {
-                let user = await getUser();
-                if (!user) {
-                    user = {
-                        id: 1,
-                        name: "Пользователь",
-                        photo: "https://via.placeholder.com/120",
-                        description: "Любитель мемов!"
-                    };
-                    await upsertUser(user);
-                }
+                const user = await getUser(currentUserId);
+                const userMemes = await getMemesByUser(currentUserId);
                 return `
                     <div class="profile-card">
                         <img src="${user.photo}" alt="Фото профиля">
@@ -357,6 +442,37 @@
                             <input type="file" id="profile-photo" accept="image/*">
                         </div>
                         <button class="submit-btn" onclick="updateProfile()">Обновить профиль</button>
+                        <h3 style="margin-top: 20px;">Ваши мемы</h3>
+                        ${userMemes.length === 0 ? '<div class="memes-empty">Вы пока не создали мемов.</div>' : userMemes.map(meme => `
+                            <div class="meme-card">
+                                ${meme.photo ? `<img src="${meme.photo}" alt="Meme Image">` : ''}
+                                <h3>${meme.title}</h3>
+                                <p>${meme.description}</p>
+                                <div class="tags">Теги: ${meme.tags.join(", ")}</div>
+                                ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+            userProfile: async (userId) => {
+                const user = await getUser(userId);
+                const userMemes = await getMemesByUser(userId);
+                return `
+                    <div class="profile-card">
+                        <img src="${user.photo}" alt="Фото профиля">
+                        <h2>${user.name}</h2>
+                        <p>${user.description || 'Нет описания'}</p>
+                        <h3 style="margin-top: 20px;">Мемы пользователя</h3>
+                        ${userMemes.length === 0 ? '<div class="memes-empty">Этот пользователь пока не создал мемов.</div>' : userMemes.map(meme => `
+                            <div class="meme-card">
+                                ${meme.photo ? `<img src="${meme.photo}" alt="Meme Image">` : ''}
+                                <h3>${meme.title}</h3>
+                                <p>${meme.description}</p>
+                                <div class="tags">Теги: ${meme.tags.join(", ")}</div>
+                                ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             }
@@ -369,6 +485,28 @@
                 if (item.dataset.tab === tab) item.classList.add('active');
             });
             document.getElementById('content').innerHTML = await templates[tab]();
+        }
+
+        // View user profile
+        async function viewProfile(userId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('content').innerHTML = await templates.userProfile(userId);
+        }
+
+        // Search users
+        async function searchUsers() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const users = await getAllUsers();
+            const filteredUsers = users.filter(user => user.name.toLowerCase().includes(query));
+            document.getElementById('search-results').innerHTML = filteredUsers.map(user => `
+                <div class="user-card" onclick="viewProfile(${user.id})">
+                    <img src="${user.photo}" alt="Фото профиля">
+                    <div>
+                        <h3>${user.name}</h3>
+                        <p>${user.description || 'Нет описания'}</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
         // Create meme
@@ -385,6 +523,7 @@
                     description: desc,
                     tags,
                     nsfw,
+                    userId: currentUserId,
                     createdAt: new Date().toISOString()
                 };
 
@@ -413,7 +552,7 @@
             const desc = document.getElementById('profile-desc').value;
             const photoInput = document.getElementById('profile-photo');
 
-            let user = await getUser() || { id: 1, name: "Пользователь", photo: "https://via.placeholder.com/120", description: "Любитель мемов!" };
+            let user = await getUser(currentUserId);
 
             if (photoInput.files.length > 0) {
                 const reader = new FileReader();
@@ -440,8 +579,26 @@
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.ready();
                 Telegram.WebApp.expand();
+                const tgUser = Telegram.WebApp.initDataUnsafe.user;
+                currentUserId = tgUser ? tgUser.id : 1; // Fallback for testing
+            } else {
+                currentUserId = 1; // Fallback for non-Telegram environment
             }
+
             await initDB();
+
+            // Check if user exists, create if not
+            let user = await getUser(currentUserId);
+            if (!user) {
+                user = {
+                    id: currentUserId,
+                    name: Telegram.WebApp.initDataUnsafe.user?.first_name || "Пользователь",
+                    photo: "https://via.placeholder.com/120",
+                    description: "Любитель мемов!"
+                };
+                await upsertUser(user);
+            }
+
             switchTab('memes');
         }
 
