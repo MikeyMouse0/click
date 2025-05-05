@@ -94,6 +94,22 @@
         .meme-card .likes button.liked {
             color: #ef4444;
         }
+        .meme-card .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .meme-card .actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .meme-card .actions .delete {
+            background-color: #ef4444;
+            color: white;
+        }
 
         .form-group {
             margin-bottom: 20px;
@@ -403,6 +419,16 @@
             });
         }
 
+        async function deleteMeme(memeId) {
+            const transaction = db.transaction(['memes'], 'readwrite');
+            const store = transaction.objectStore('memes');
+            return new Promise((resolve, reject) => {
+                const request = store.delete(memeId);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
         async function getAllMemes() {
             const transaction = db.transaction(['memes'], 'readonly');
             const store = transaction.objectStore('memes');
@@ -480,8 +506,12 @@
                     .sort((a, b) => (b.likes || 0) - (a.likes || 0))
                     .slice(0, 10);
                 const likedMemes = getLikedMemes();
+                const currentUser = await getUser(currentUserId) || {
+                    id: currentUserId,
+                    isModerator: false,
+                    isSuperadmin: false
+                };
 
-                // Обрабатываем топ-10 мемов
                 const topMemesHtml = await Promise.all(topMemes.map(async meme => {
                     const user = await getUser(meme.userId);
                     return `
@@ -496,11 +526,15 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
+                            ${currentUser && (currentUser.isModerator || currentUser.isSuperadmin) ? `
+                                <div class="actions">
+                                    <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }));
 
-                // Обрабатываем все одобренные мемы
                 const allMemesHtml = await Promise.all(approvedMemes.map(async meme => {
                     const user = await getUser(meme.userId);
                     return `
@@ -515,6 +549,11 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
+                            ${currentUser && (currentUser.isModerator || currentUser.isSuperadmin) ? `
+                                <div class="actions">
+                                    <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }));
@@ -746,7 +785,7 @@
                 nsfw,
                 userId: currentUserId,
                 createdAt: new Date().toISOString(),
-                status: user.isModerator || user.isSuperadmin ? 'approved' : 'pending',
+                status: user && (user.isModerator || user.isSuperadmin) ? 'approved' : 'pending',
                 likes: 0
             };
 
@@ -807,14 +846,19 @@
         }
 
         async function rejectMeme(memeId) {
-            const transaction = db.transaction(['memes'], 'readwrite');
-            const store = transaction.objectStore('memes');
-            await new Promise((resolve, reject) => {
-                const request = store.delete(memeId);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
+            await deleteMeme(memeId);
             switchTab('moderation');
+        }
+
+        async function deleteMeme(memeId) {
+            const user = await getUser(currentUserId) || {
+                id: currentUserId,
+                isModerator: false,
+                isSuperadmin: false
+            };
+            if (!user.isModerator && !user.isSuperadmin) return;
+            await deleteMeme(memeId);
+            switchTab('memes');
         }
 
         async function addModerator() {
