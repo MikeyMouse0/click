@@ -502,6 +502,7 @@
             memes: async () => {
                 const memes = await getAllMemes();
                 const approvedMemes = memes.filter(meme => meme.status === 'approved');
+                console.log('Отображение мемов:', { totalMemes: memes.length, approvedMemes: approvedMemes.length });
                 const topMemes = [...approvedMemes]
                     .sort((a, b) => (b.likes || 0) - (a.likes || 0))
                     .slice(0, 10);
@@ -526,7 +527,7 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
-                            ${currentUser.isModerator || currentUser.isSuperadmin ? `
+                            ${currentUser.isModerator === true || currentUser.isSuperadmin === true ? `
                                 <div class="actions">
                                     <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
                                 </div>
@@ -549,7 +550,7 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
-                            ${currentUser.isModerator || currentUser.isSuperadmin ? `
+                            ${currentUser.isModerator === true || currentUser.isSuperadmin === true ? `
                                 <div class="actions">
                                     <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
                                 </div>
@@ -680,6 +681,7 @@
                     return `<h2>Модерация</h2><p>У вас нет доступа к модерации.</p>`;
                 }
                 const pendingMemes = await getMemesByStatus('pending');
+                console.log('Мемы на модерации:', { pendingMemesCount: pendingMemes.length });
                 const pendingMemesHtml = await Promise.all(pendingMemes.map(async meme => {
                     const user = await getUser(meme.userId);
                     return `
@@ -744,8 +746,9 @@
         }
 
         async function deleteMeme(memeId) {
+            memeId = Number(memeId);
             if (!memeId) {
-                console.error('Ошибка: memeId не указан');
+                console.error('Ошибка: memeId не указан или некорректен', { memeId });
                 return;
             }
             const user = await getUser(currentUserId) || {
@@ -753,8 +756,9 @@
                 isModerator: false,
                 isSuperadmin: false
             };
+            console.log('Попытка удаления мема:', { memeId, user });
             if (!user.isModerator && !user.isSuperadmin) {
-                console.error('Ошибка: У пользователя нет прав для удаления мема');
+                console.error('Ошибка: У пользователя нет прав для удаления мема', { user });
                 return;
             }
             const meme = await getMeme(memeId);
@@ -803,12 +807,10 @@
             const tags = document.getElementById('meme-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const nsfw = document.getElementById('meme-nsfw').checked;
             const photoInput = document.getElementById('meme-photo');
-            const user = await getUser(currentUserId) || {
-                id: currentUserId,
-                isModerator: false,
-                isSuperadmin: false,
-                points: 0
-            };
+            const user = Object.assign(
+                { id: currentUserId, isModerator: false, isSuperadmin: false, points: 0 },
+                await getUser(currentUserId)
+            );
 
             if (!title || !desc) {
                 console.error('Ошибка: Название и описание обязательны');
@@ -822,11 +824,16 @@
                 nsfw,
                 userId: currentUserId,
                 createdAt: new Date().toISOString(),
-                status: user && (user.isModerator === true || user.isSuperadmin === true) ? 'approved' : 'pending',
+                status: (user.isModerator === true || user.isSuperadmin === true) ? 'approved' : 'pending',
                 likes: 0
             };
 
-            console.log('Создание мема:', { user, memeStatus: meme.status });
+            console.log('Создание мема:', {
+                userId: user.id,
+                isModerator: user.isModerator,
+                isSuperadmin: user.isSuperadmin,
+                memeStatus: meme.status
+            });
 
             if (photoInput.files.length > 0) {
                 const reader = new FileReader();
@@ -992,6 +999,12 @@
                 };
                 await upsertUser(user);
             }
+
+            console.log('Инициализация пользователя:', {
+                userId: user.id,
+                isModerator: user.isModerator,
+                isSuperadmin: user.isSuperadmin
+            });
 
             const moderationNav = document.querySelector('.nav-item[data-tab="moderation"]');
             if (!user.isModerator && !user.isSuperadmin) {
