@@ -65,6 +65,11 @@
             font-weight: 500;
             font-size: 13px;
         }
+        .meme-card .pending {
+            color: #f59e0b;
+            font-weight: 500;
+            font-size: 13px;
+        }
         .meme-card img {
             max-width: 100%;
             border-radius: 8px;
@@ -332,13 +337,14 @@
     <script>
         // IndexedDB setup
         const dbName = "MemeAppDB";
-        const dbVersion = 2;
+        const dbVersion = 3;
         let db;
         let currentUserId;
         const SUPERADMIN_ID = 6201881953;
         const DEFAULT_IMAGE = "https://via.placeholder.com/120";
         const MODERATOR_CODE = "MOD2025";
-        const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; // Замените на ваш bot token
+        const SERVER_URL = "http://localhost:8000"; // URL сервера бота
+        const TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; // Замените на ваш bot token
 
         // Telegram auth check (client-side)
         async function verifyTelegramInitData(initData) {
@@ -358,7 +364,7 @@
                 .join('\n');
 
             const encoder = new TextEncoder();
-            const botTokenData = encoder.encode(BOT_TOKEN);
+            const botTokenData = encoder.encode(TELEGRAM_BOT_TOKEN);
             const secretKeyData = await crypto.subtle.digest('SHA-256', botTokenData);
             const secretKey = await crypto.subtle.importKey(
                 'raw',
@@ -389,6 +395,10 @@
                     }
                     if (!db.objectStoreNames.contains('users')) {
                         db.createObjectStore('users', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('moderationLogs')) {
+                        const logStore = db.createObjectStore('moderationLogs', { keyPath: 'id', autoIncrement: true });
+                        logStore.createIndex('memeId', 'memeId', { unique: false });
                     }
                 };
 
@@ -427,6 +437,16 @@
             return new Promise((resolve, reject) => {
                 const request = store.put(meme);
                 request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteMemeFromDB(memeId) {
+            const transaction = db.transaction(['memes'], 'readwrite');
+            const store = transaction.objectStore('memes');
+            return new Promise((resolve, reject) => {
+                const request = store.delete(memeId);
+                request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
             });
         }
@@ -502,6 +522,16 @@
             });
         }
 
+        async function addModerationLog(log) {
+            const transaction = db.transaction(['moderationLogs'], 'readwrite');
+            const store = transaction.objectStore('moderationLogs');
+            return new Promise((resolve, reject) => {
+                const request = store.add(log);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
         function getLikedMemes() {
             const liked = localStorage.getItem(`likedMemes_${currentUserId}`);
             return liked ? JSON.parse(liked) : [];
@@ -530,6 +560,58 @@
             }
             console.log('Результирующий статус: approved (модератор или суперадмин)');
             return 'approved';
+        }
+
+        async function notifyModerators(memeId, memeTitle) {
+            const moderators = (await getAllUsers()).filter(user => user.isModerator || user.isSuperadmin);
+            if (moderators.length === 0) {
+                console.warn('Нет модераторов для уведомления');
+                return false;
+            }
+
+            const notificationData = {
+                memeId,
+                memeTitle,
+                authorId: currentUserId,
+                moderators: moderators.map(mod => ({
+                    telegram_id: mod.id, // Предполагаем, что Telegram ID совпадает с user.id
+                    name: mod.name
+                }))
+            };
+
+            try {
+                const response = await fetch(`${SERVER_URL}/notify-moderators`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notificationData)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                const result = await response.json();
+                console.log('Уведомления отправлены:', result);
+
+                // Логирование успешной отправки
+                await addModerationLog({
+                    memeId,
+                    action: 'notify_moderators',
+                    moderatorId: null,
+                    timestamp: new Date().toISOString(),
+                    details: `Notified ${moderators.length} moderators`
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Ошибка при отправке уведомлений:', error);
+                await addModerationLog({
+                    memeId,
+                    action: 'notify_moderators_failed',
+                    moderatorId: null,
+                    timestamp: new Date().toISOString(),
+                    details: `Failed to notify moderators: ${error.message}`
+                });
+                return false;
+            }
         }
 
         const templates = {
@@ -566,7 +648,7 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
-                            ${currentUser.isModerator === true || currentUser.isSuperadmin === true ? `
+                            ${currentUser.isModerator || currentUser.isSuperadmin ? `
                                 <div class="actions">
                                     <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
                                 </div>
@@ -589,7 +671,7 @@
                                 <span>${meme.likes || 0} лайков</span>
                             </div>
                             <div class="author" onclick="viewProfile(${meme.userId})">Автор: ${user ? user.name : 'Неизвестный'}</div>
-                            ${currentUser.isModerator === true || currentUser.isSuperadmin === true ? `
+                            ${currentUser.isModerator || currentUser.isSuperadmin ? `
                                 <div class="actions">
                                     <button class="delete" onclick="deleteMeme(${meme.id})">Удалить</button>
                                 </div>
@@ -702,6 +784,7 @@
                                 <p>${meme.description}</p>
                                 <div class="tags">Теги: ${meme.tags.join(", ")}</div>
                                 ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                                ${meme.status === 'pending' ? '<div class="pending">На модерации</div>' : ''}
                                 <div class="likes">
                                     <span>${meme.likes || 0} лайков</span>
                                 </div>
@@ -766,6 +849,7 @@
                                 <p>${meme.description}</p>
                                 <div class="tags">Теги: ${meme.tags.join(", ")}</div>
                                 ${meme.nsfw ? '<div class="nsfw">18+</div>' : ''}
+                                ${meme.status === 'pending' ? '<div class="pending">На модерации</div>' : ''}
                                 <div class="likes">
                                     <span>${meme.likes || 0} лайков</span>
                                 </div>
@@ -806,12 +890,12 @@
                 return;
             }
             try {
-                const transaction = db.transaction(['memes'], 'readwrite');
-                const store = transaction.objectStore('memes');
-                await new Promise((resolve, reject) => {
-                    const request = store.delete(memeId);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
+                await deleteMemeFromDB(memeId);
+                await addModerationLog({
+                    memeId,
+                    action: 'delete',
+                    moderatorId: currentUserId,
+                    timestamp: new Date().toISOString()
                 });
                 console.log(`Мем с ID ${memeId} успешно удален`);
                 document.getElementById('content').innerHTML = '<p class="notification">Мем удален!</p>';
@@ -899,7 +983,17 @@
 
             const saveMeme = async () => {
                 try {
-                    const memeId = await addMeme(meme);
+                    // Если мем требует модерации, сначала уведомляем модераторов
+                    let memeId = Date.now(); // Временный ID для уведомления
+                    if (meme.status === 'pending') {
+                        const notified = await notifyModerators(memeId, meme.title);
+                        if (!notified) {
+                            throw new Error('Не удалось уведомить модераторов');
+                        }
+                    }
+
+                    // Сохранение мема
+                    memeId = await addMeme(meme);
                     if (meme.status === 'approved') {
                         user.points = (user.points || 0) + 5;
                         await upsertUser(user);
@@ -908,7 +1002,7 @@
                     setTimeout(() => switchTab('memes'), 2000);
                 } catch (error) {
                     console.error('Ошибка при сохранении мема:', error);
-                    document.getElementById('content').innerHTML = '<p class="notification">Ошибка при сохранении мема</p>';
+                    document.getElementById('content').innerHTML = '<p class="notification">Ошибка при создании мема: ' + error.message + '</p>';
                     setTimeout(() => switchTab('create'), 2000);
                 }
             };
@@ -948,6 +1042,15 @@
         async function approveMeme(memeId) {
             const memes = await getAllMemes();
             const meme = memes.find(m => m.id === memeId);
+            const currentUser = await getUser(currentUserId);
+            if (!currentUser) {
+                console.error('Ошибка: Текущий пользователь не найден');
+                return;
+            }
+            if (!currentUser.isModerator && !currentUser.isSuperadmin) {
+                console.error('Ошибка: У пользователя нет прав для одобрения мема');
+                return;
+            }
             if (meme) {
                 meme.status = 'approved';
                 await updateMeme(meme);
@@ -956,13 +1059,30 @@
                     user.points = (user.points || 0) + 5;
                     await upsertUser(user);
                 }
+                await addModerationLog({
+                    memeId,
+                    action: 'approve',
+                    moderatorId: currentUserId,
+                    timestamp: new Date().toISOString()
+                });
                 document.getElementById('content').innerHTML = '<p class="notification">Мем одобрен!</p>';
                 setTimeout(() => switchTab('moderation'), 2000);
             }
         }
 
         async function rejectMeme(memeId) {
-            await deleteMeme(memeId);
+            const currentUser = await getUser(currentUserId);
+            if (!currentUser.isModerator && !currentUser.isSuperadmin) {
+                console.error('Ошибка: У пользователя нет прав для отклонения мема');
+                return;
+            }
+            await deleteMemeFromDB(memeId);
+            await addModerationLog({
+                memeId,
+                action: 'reject',
+                moderatorId: currentUserId,
+                timestamp: new Date().toISOString()
+            });
             document.getElementById('content').innerHTML = '<p class="notification">Мем отклонен!</p>';
             setTimeout(() => switchTab('moderation'), 2000);
         }
@@ -1051,7 +1171,7 @@
                 const initData = Telegram.WebApp.initData;
                 const isValid = await verifyTelegramInitData(initData);
                 if (!isValid) {
-                    document.getElementById('content').innerHTML = '<p>Ошибка авторизации. Пожалуйста, откройте приложение через Telegram.</p>';
+                    document.getElementById('content').innerHTML = '<p>Ошибка авторизации. Пожалуйста, зарегистрируйтесь через бота с помощью команды /start.</p>';
                     return;
                 }
 
