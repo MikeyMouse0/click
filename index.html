@@ -1,305 +1,492 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мемы Telegram</title>
+    <title>MemeLand</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #ffffff;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            background-color: #f0f2f5;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .header {
-            background-color: #ffffff;
-            padding: 15px;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        .dark-theme {
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
-        .content {
-            flex: 1;
-            overflow-y: auto;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
             padding: 20px;
         }
-        .notification {
-            text-align: center;
-            color: #3b82f6;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        .form-group {
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-        }
-        .form-group input[type="text"],
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            background-color: #f9fafb;
-        }
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        .form-group input[type="file"] {
-            width: 100%;
-            padding: 10px 0;
-        }
-        .form-group .checkbox {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .form-group input[type="checkbox"] {
-            width: auto;
-            accent-color: #3b82f6;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
+        .search-icon {
             cursor: pointer;
-            transition: background-color 0.2s;
+            font-size: 24px;
         }
-        .submit-btn:hover {
-            background-color: #2563eb;
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .meme-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.2s;
+        }
+        .dark-theme .meme-card {
+            background: #2a2a2a;
+        }
+        .meme-card:hover {
+            transform: scale(1.02);
+        }
+        .meme-image {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .meme-image.nsfw {
+            filter: blur(10px);
+            cursor: pointer;
+        }
+        .like-btn {
+            cursor: pointer;
+            font-size: 20px;
+            color: #ccc;
+        }
+        .like-btn.liked {
+            color: #ff5555;
         }
         .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px;
+            background: white;
             display: flex;
             justify-content: space-around;
-            background-color: #ffffff;
-            padding: 12px 0;
-            border-top: 1px solid #e5e7eb;
-            position: sticky;
-            bottom: 0;
-            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            border-radius: 15px 15px 0 0;
         }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #6b7280;
-            font-size: 12px;
+        .dark-theme .nav-bar {
+            background: #2a2a2a;
+        }
+        .nav-btn {
+            text-align: center;
             cursor: pointer;
-            padding: 8px;
-            transition: color 0.2s;
+            transition: color 0.3s;
         }
-        .nav-item.active {
-            color: #3b82f6;
+        .nav-btn i {
+            font-size: 24px;
+            margin-bottom: 5px;
         }
-        .nav-item i {
-            font-size: 22px;
-            margin-bottom: 4px;
+        .nav-btn.active {
+            color: #007bff;
         }
-        @media (max-width: 600px) {
-            .content {
-                padding: 15px;
-            }
-            .header {
-                font-size: 20px;
-            }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+        }
+        .dark-theme .form-group input,
+        .dark-theme .form-group textarea,
+        .dark-theme .form-group select {
+            background: #333;
+            border-color: #555;
+            color: #fff;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .dark-theme .modal-content {
+            background: #2a2a2a;
         }
     </style>
 </head>
 <body>
-    <div class="header">Мемы Telegram</div>
-    <div class="content" id="content"></div>
-    <div class="nav-bar">
-        <div class="nav-item active" data-tab="create" onclick="switchTab('create')">
-            <i class="fas fa-plus-circle"></i> Создать
+    <div class="container">
+        <div class="header">
+            <h2>MemeLand</h2>
+            <i class="fas fa-search search-icon" onclick="openSearchModal()"></i>
         </div>
-        <div class="nav-item" data-tab="profile" onclick="switchTab('profile')">
-            <i class="fas fa-user"></i> Профиль
+
+        <!-- Экран логина -->
+        <div id="login" class="tab-content active">
+            <h3>Вход</h3>
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Имя пользователя">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Пароль">
+            </div>
+            <button class="btn" onclick="login()">Войти</button>
+        </div>
+
+        <!-- Вкладка мемов -->
+        <div id="memes" class="tab-content">
+            <h3>Мемы</h3>
+            <div id="meme-list"></div>
+        </div>
+
+        <!-- Вкладка создания мема -->
+        <div id="create-meme" class="tab-content">
+            <h3>Создать мем</h3>
+            <div class="form-group">
+                <input type="text" id="meme-title" placeholder="Название мема">
+            </div>
+            <div class="form-group">
+                <textarea id="meme-description" placeholder="Описание"></textarea>
+            </div>
+            <div class="form-group">
+                <input type="file" id="meme-image" accept="image/*">
+            </div>
+            <div class="form-group">
+                <input type="text" id="meme-tag" placeholder="Тег">
+            </div>
+            <div class="form-group">
+                <select id="meme-nsfw">
+                    <option value="false">Безопасно для всех</option>
+                    <option value="true">18+</option>
+                </select>
+            </div>
+            <button class="btn" onclick="submitMeme()">Опубликовать</button>
+        </div>
+
+        <!-- Вкладка настроек -->
+        <div id="settings" class="tab-content">
+            <h3>Настройки</h3>
+            <div class="form-group">
+                <h4>Профиль</h4>
+                <input type="file" id="profile-pic" accept="image/*">
+                <input type="text" id="profile-username" placeholder="Новое имя пользователя">
+                <input type="password" id="profile-password" placeholder="Новый пароль">
+                <input type="text" id="profile-status" placeholder="Статус">
+                <button class="btn" onclick="updateProfile()">Обновить профиль</button>
+            </div>
+            <div class="form-group">
+                <h4>Настройки приложения</h4>
+                <select id="theme" onchange="changeTheme()">
+                    <option value="light">Светлая тема</option>
+                    <option value="dark">Тёмная тема</option>
+                </select>
+            </div>
+            <button class="btn" onclick="logout()">Выйти</button>
+        </div>
+
+        <!-- Вкладка модератора -->
+        <div id="moderator" class="tab-content">
+            <h3>Панель модератора</h3>
+            <div id="pending-memes"></div>
         </div>
     </div>
 
+    <!-- Навигационная панель -->
+    <div class="nav-bar">
+        <div class="nav-btn" onclick="switchTab('memes')">
+            <i class="fas fa-image"></i><br>Мемы
+        </div>
+        <div class="nav-btn" onclick="switchTab('create-meme')">
+            <i class="fas fa-plus-circle"></i><br>Создать
+        </div>
+        <div class="nav-btn" onclick="switchTab('settings')">
+            <i class="fas fa-cog"></i><br>Настройки
+        </div>
+        <div class="nav-btn moderator-only" onclick="switchTab('moderator')" style="display: none;">
+            <i class="fas fa-shield-alt"></i><br>Модератор
+        </div>
+    </div>
+
+    <!-- Модальное окно поиска -->
+    <div id="search-modal" class="modal">
+        <div class="modal-content">
+            <h3>Поиск пользователей</h3>
+            <input type="text" id="search-username" placeholder="Введите имя пользователя">
+            <button class="btn" onclick="searchUsers()">Поиск</button>
+            <div id="search-results"></div>
+            <button class="btn" onclick="closeSearchModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        const SERVER_URL = "http://localhost:8000"; // Замените на URL вашего сервера
+        const tg = window.Telegram.WebApp;
+        tg.ready();
         let currentUser = null;
-        let sessionToken = null;
+        const API_URL = "http://localhost:3001/api"; // Замените на URL вашего сервера
 
-        // Проверка авторизации через Telegram WebApp
-        async function authenticate() {
-            if (!window.Telegram?.WebApp) {
-                document.getElementById('content').innerHTML = '<p class="notification">Ошибка: Telegram WebApp недоступен. Откройте через Telegram.</p>';
-                return false;
-            }
-
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-            const initData = Telegram.WebApp.initData;
-
-            if (!initData) {
-                document.getElementById('content').innerHTML = '<p class="notification">Ошибка: Данные авторизации отсутствуют. Используйте /start в боте.</p>';
-                return false;
-            }
-
-            try {
-                const response = await fetch(`${SERVER_URL}/auth`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData })
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}`);
+        // Проверка сохранённой сессии
+        const token = localStorage.getItem("token");
+        if (token) {
+            fetch(`${API_URL}/auth/verify`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) {
+                    currentUser = data.user;
+                    showMainApp();
+                    applyTheme(currentUser.theme);
                 }
-                const result = await response.json();
-                currentUser = result.user;
-                sessionToken = result.session_token;
-                localStorage.setItem('sessionToken', sessionToken);
-                document.getElementById('content').innerHTML = `<p class="notification">Добро пожаловать, ${currentUser.name}!</p>`;
-                return true;
-            } catch (error) {
-                console.error('Ошибка авторизации:', error);
-                document.getElementById('content').innerHTML = '<p class="notification">Ошибка авторизации. Попробуйте снова.</p>';
-                return false;
-            }
+            })
+            .catch(() => localStorage.removeItem("token"));
         }
 
-        // Шаблоны страниц
-        const templates = {
-            create: () => `
-                <h2>Создать мем</h2>
-                <div class="form-group">
-                    <label>Название</label>
-                    <input type="text" id="meme-title" placeholder="Введите название мема">
-                </div>
-                <div class="form-group">
-                    <label>Описание</label>
-                    <textarea id="meme-desc" placeholder="Опишите ваш мем"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Изображение</label>
-                    <input type="file" id="meme-photo" accept="image/*">
-                </div>
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="meme-nsfw">
-                    <label for="meme-nsfw">18+ контент</label>
-                </div>
-                <button class="submit-btn" onclick="createMeme()">Создать мем</button>
-            `,
-            profile: () => `
-                <h2>Профиль</h2>
-                ${currentUser ? `
-                    <p><strong>Имя:</strong> ${currentUser.name}</p>
-                    <p><strong>Telegram ID:</strong> ${currentUser.telegram_id}</p>
-                    <p><strong>Роль:</strong> ${currentUser.is_superadmin ? 'Суперадмин' : currentUser.is_moderator ? 'Модератор' : 'Пользователь'}</p>
-                ` : '<p class="notification">Авторизуйтесь через Telegram.</p>'}
-            `
-        };
-
-        // Переключение вкладок
-        async function switchTab(tab) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.dataset.tab === tab) item.classList.add('active');
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
             });
-            document.getElementById('content').innerHTML = await templates[tab]();
-        }
-
-        // Создание мема
-        async function createMeme() {
-            if (!currentUser || !sessionToken) {
-                document.getElementById('content').innerHTML = '<p class="notification">Ошибка: Вы не авторизованы.</p>';
-                setTimeout(() => switchTab('profile'), 2000);
-                return;
-            }
-
-            const title = document.getElementById('meme-title').value;
-            const desc = document.getElementById('meme-desc').value;
-            const nsfw = document.getElementById('meme-nsfw').checked;
-            const photoInput = document.getElementById('meme-photo');
-
-            if (!title || !desc) {
-                document.getElementById('content').innerHTML = '<p class="notification">Название и описание обязательны.</p>';
-                setTimeout(() => switchTab('create'), 2000);
-                return;
-            }
-
-            const meme = {
-                title,
-                description: desc,
-                nsfw,
-                userId: currentUser.telegram_id,
-                createdAt: new Date().toISOString(),
-                status: currentUser.is_moderator || currentUser.is_superadmin ? 'approved' : 'pending'
-            };
-
-            // Отправка уведомления модераторам
-            if (meme.status === 'pending') {
-                const notificationData = {
-                    memeId: Date.now(),
-                    memeTitle: meme.title,
-                    authorId: currentUser.telegram_id,
-                    moderators: [{ telegram_id: 6201881953, name: "Суперадмин" }] // Пример модератора
-                };
-                try {
-                    const response = await fetch(`${SERVER_URL}/notify-moderators`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${sessionToken}`
-                        },
-                        body: JSON.stringify(notificationData)
-                    });
-                    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-                } catch (error) {
-                    console.error('Ошибка уведомления модераторов:', error);
-                    document.getElementById('content').innerHTML = '<p class="notification">Ошибка отправки мема на модерацию.</p>';
-                    return;
-                }
-            }
-
-            // Загрузка изображения (если есть)
-            if (photoInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    meme.photo = e.target.result;
-                    document.getElementById('content').innerHTML = `<p class="notification">Мем ${meme.status === 'approved' ? 'опубликован' : 'отправлен на модерацию'}!</p>`;
-                    setTimeout(() => switchTab('create'), 2000);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
+            const data = await res.json();
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+                currentUser = data.user;
+                showMainApp();
+                applyTheme(currentUser.theme);
             } else {
-                document.getElementById('content').innerHTML = `<p class="notification">Мем ${meme.status === 'approved' ? 'опубликован' : 'отправлен на модерацию'}!</p>`;
-                setTimeout(() => switchTab('create'), 2000);
+                alert(data.message || "Неверные учетные данные");
             }
         }
 
-        // Инициализация
-        async function init() {
-            const isAuthenticated = await authenticate();
-            if (isAuthenticated) {
-                switchTab('create');
+        function showMainApp() {
+            document.getElementById("login").classList.remove("active");
+            document.getElementById("memes").classList.add("active");
+            document.querySelectorAll(".nav-btn").forEach(btn => btn.style.display = "block");
+            if (currentUser.isModerator) {
+                document.querySelector(".moderator-only").style.display = "block";
+            }
+            renderMemes();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+            document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+            document.getElementById(tabId).classList.add("active");
+            document.querySelector(`.nav-btn[onclick="switchTab('${tabId}')"]`).classList.add("active");
+            if (tabId === "memes") renderMemes();
+            if (tabId === "moderator") renderPendingMemes();
+        }
+
+        async function renderMemes() {
+            const res = await fetch(`${API_URL}/memes`, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            const memes = await res.json();
+            const memeList = document.getElementById("meme-list");
+            memeList.innerHTML = "";
+            memes.forEach(meme => {
+                const memeCard = document.createElement("div");
+                memeCard.className = "meme-card";
+                memeCard.innerHTML = `
+                    <h4>${meme.title}</h4>
+                    <p>${meme.description}</p>
+                    <img src="${meme.image}" class="${meme.nsfw ? 'meme-image nsfw' : 'meme-image'}" onclick="if(this.classList.contains('nsfw')) this.classList.remove('nsfw')">
+                    <p>Тег: ${meme.tag}</p>
+                    <i class="fas fa-heart like-btn ${meme.likes.includes(currentUser.username) ? 'liked' : ''}" onclick="toggleLike('${meme._id}')"></i> ${meme.likes.length}
+                `;
+                memeList.appendChild(memeCard);
+            });
+        }
+
+        async function toggleLike(memeId) {
+            await fetch(`${API_URL}/memes/${memeId}/like`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            renderMemes();
+        }
+
+        async function submitMeme() {
+            const formData = new FormData();
+            formData.append("title", document.getElementById("meme-title").value);
+            formData.append("description", document.getElementById("meme-description").value);
+            formData.append("image", document.getElementById("meme-image").files[0]);
+            formData.append("tag", document.getElementById("meme-tag").value);
+            formData.append("nsfw", document.getElementById("meme-nsfw").value);
+            const res = await fetch(`${API_URL}/memes`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Мем отправлен на модерацию!");
+                document.getElementById("meme-title").value = "";
+                document.getElementById("meme-description").value = "";
+                document.getElementById("meme-image").value = "";
+                document.getElementById("meme-tag").value = "";
+                document.getElementById("meme-nsfw").value = "false";
             } else {
-                switchTab('profile');
+                alert(data.message || "Не удалось отправить мем");
             }
         }
 
-        init();
+        async function renderPendingMemes() {
+            const res = await fetch(`${API_URL}/memes/pending`, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            const memes = await res.json();
+            const pendingList = document.getElementById("pending-memes");
+            pendingList.innerHTML = "";
+            memes.forEach(meme => {
+                const memeCard = document.createElement("div");
+                memeCard.className = "meme-card";
+                memeCard.innerHTML = `
+                    <h4>${meme.title}</h4>
+                    <p>${meme.description}</p>
+                    <img src="${meme.image}" class="${meme.nsfw ? 'meme-image nsfw' : 'meme-image'}" onclick="if(this.classList.contains('nsfw')) this.classList.remove('nsfw')">
+                    <p>Тег: ${meme.tag}</p>
+                    <button class="btn" onclick="approveMeme('${meme._id}')">Одобрить</button>
+                    <button class="btn" onclick="rejectMeme('${meme._id}')">Отклонить</button>
+                `;
+                pendingList.appendChild(memeCard);
+            });
+        }
+
+        async function approveMeme(memeId) {
+            await fetch(`${API_URL}/memes/${memeId}/approve`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            renderPendingMemes();
+        }
+
+        async function rejectMeme(memeId) {
+            await fetch(`${API_URL}/memes/${memeId}/reject`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            renderPendingMemes();
+        }
+
+        async function updateProfile() {
+            const formData = new FormData();
+            formData.append("username", document.getElementById("profile-username").value);
+            formData.append("password", document.getElementById("profile-password").value);
+            formData.append("status", document.getElementById("profile-status").value);
+            if (document.getElementById("profile-pic").files[0]) {
+                formData.append("profilePic", document.getElementById("profile-pic").files[0]);
+            }
+            const res = await fetch(`${API_URL}/users/profile`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                alert("Профиль обновлён!");
+            } else {
+                alert(data.message || "Не удалось обновить профиль");
+            }
+        }
+
+        async function changeTheme() {
+            const theme = document.getElementById("theme").value;
+            if (theme === "dark") {
+                document.body.classList.add("dark-theme");
+            } else {
+                document.body.classList.remove("dark-theme");
+            }
+            await fetch(`${API_URL}/users/theme`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ theme })
+            });
+            currentUser.theme = theme;
+        }
+
+        function applyTheme(theme) {
+            if (theme === "dark") {
+                document.body.classList.add("dark-theme");
+            } else {
+                document.body.classList.remove("dark-theme");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            currentUser = null;
+            document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+            document.getElementById("login").classList.add("active");
+            document.querySelectorAll(".nav-btn").forEach(btn => btn.style.display = "none");
+        }
+
+        function openSearchModal() {
+            document.getElementById("search-modal").style.display = "flex";
+        }
+
+        function closeSearchModal() {
+            document.getElementById("search-modal").style.display = "none";
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById("search-username").value;
+            const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            const users = await res.json();
+            const resultsDiv = document.getElementById("search-results");
+            resultsDiv.innerHTML = "";
+            users.forEach(user => {
+                resultsDiv.innerHTML += `<p>${user.username} - ${user.status}</p>`;
+            });
+        }
     </script>
 </body>
 </html>
