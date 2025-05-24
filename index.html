@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Прыгун</title>
+  <title>Мини-игра: Прыгун</title>
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +14,7 @@
     body {
       background-color: #fff;
       color: #000;
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
     }
 
@@ -85,6 +85,7 @@
 <button id="jumpBtn">ПРЫЖОК</button>
 
 <script>
+  // === DOM Elements ===
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
@@ -97,6 +98,7 @@
   let animationId;
   let gameRunning = false;
 
+  // === Game State / Player / Ground ===
   const player = {
     x: 50,
     y: 200,
@@ -123,6 +125,8 @@
 
   highScoreDisplay.textContent = highScore;
 
+  // === Functions ===
+
   function resetGame() {
     player.y = 200;
     player.velocityY = 0;
@@ -134,7 +138,7 @@
   }
 
   function drawPlayer() {
-    // Тень
+    // Тень под игроком
     ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.beginPath();
     ctx.ellipse(player.x + player.width / 2, ground.y + 5, player.width / 2, 5, 0, 0, Math.PI * 2);
@@ -171,7 +175,7 @@
 
       obs.x -= obs.speed;
 
-      // Collision
+      // Collision detection
       if (
         player.x < obs.x + obs.width &&
         player.x + player.width > obs.x &&
@@ -181,6 +185,7 @@
         endGame();
       }
 
+      // Remove offscreen
       if (obs.x + obs.width < 0) {
         obstacles.splice(i, 1);
         score++;
@@ -202,7 +207,6 @@
   }
 
   function jump() {
-    console.log("Прыжок!");
     if (player.y === ground.y - player.height) {
       player.velocityY = player.jumpPower;
     }
@@ -249,295 +253,26 @@
     startScreen.style.display = "block";
   }
 
-  // Управление
+  // === Event Listeners ===
+
   window.addEventListener("keydown", (e) => {
-    if (e.code === "Space" || e.code === "ArrowUp") jump();
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      jump();
+    }
   });
 
   startBtn.addEventListener("click", () => {
     startGame();
   });
 
-  // Фикс для мобильных
   jumpBtn.addEventListener("click", () => {
     jump();
   });
 
   jumpBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault(); // убираем задержку
+    e.preventDefault(); // убирает задержку на мобильных
     jump();
   });
 </script>
 </body>
-  </html><!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Прыгун</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: #fff;
-      color: #000;
-      font-family: sans-serif;
-      text-align: center;
-    }
-
-    canvas {
-      display: block;
-      margin: 30px auto;
-      background: linear-gradient(#f0f0f0, #ccc);
-      border: 2px solid #999;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    #scoreboard {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    #startScreen {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    #startBtn, #jumpBtn {
-      padding: 12px 24px;
-      font-size: 1rem;
-      font-weight: bold;
-      background: #222;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 10px;
-      transition: background 0.3s ease;
-    }
-
-    #startBtn:hover,
-    #jumpBtn:hover {
-      background: #444;
-    }
-
-    #jumpBtn {
-      display: block;
-      width: 80%;
-      max-width: 300px;
-      margin: 20px auto;
-      background: #555;
-    }
-  </style>
-</head>
-<body>
-
-<div id="startScreen">
-  <h1>Прыгун</h1>
-  <p>Нажмите пробел или кнопку ниже</p>
-  <button id="startBtn">Начать игру</button>
-</div>
-
-<canvas id="gameCanvas" width="600" height="400"></canvas>
-<div id="scoreboard">Счёт: <span id="score">0</span> | Рекорд: <span id="highScore">0</span></div>
-<button id="jumpBtn">ПРЫЖОК</button>
-
-<script>
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-
-  const startScreen = document.getElementById("startScreen");
-  const startBtn = document.getElementById("startBtn");
-  const jumpBtn = document.getElementById("jumpBtn");
-  const scoreDisplay = document.getElementById("score");
-  const highScoreDisplay = document.getElementById("highScore");
-
-  let animationId;
-  let gameRunning = false;
-
-  const player = {
-    x: 50,
-    y: 200,
-    width: 40,
-    height: 40,
-    velocityY: 0,
-    gravity: 1,
-    jumpPower: -15,
-    color: "#888"
-  };
-
-  const ground = {
-    y: canvas.height - 50,
-    height: 50,
-    color: "#ddd"
-  };
-
-  const obstacles = [];
-  let obstacleTimer = 0;
-  let obstacleIntervalTime = 1500;
-  let score = 0;
-  let highScore = localStorage.getItem("highScore") || 0;
-  let obstacleSpeed = 4;
-
-  highScoreDisplay.textContent = highScore;
-
-  function resetGame() {
-    player.y = 200;
-    player.velocityY = 0;
-    obstacles.length = 0;
-    obstacleTimer = 0;
-    score = 0;
-    scoreDisplay.textContent = score;
-    obstacleSpeed = 4;
-  }
-
-  function drawPlayer() {
-    // Тень
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.beginPath();
-    ctx.ellipse(player.x + player.width / 2, ground.y + 5, player.width / 2, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Игрок
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-  }
-
-  function drawGround() {
-    ctx.fillStyle = ground.color;
-    ctx.fillRect(0, ground.y, canvas.width, ground.height);
-  }
-
-  function createObstacle() {
-    const height = Math.floor(Math.random() * 30) + 30;
-    const obstacle = {
-      x: canvas.width,
-      y: ground.y - height,
-      width: 30,
-      height: height,
-      speed: obstacleSpeed,
-      color: "#222"
-    };
-    obstacles.push(obstacle);
-  }
-
-  function drawObstacles() {
-    for (let i = 0; i < obstacles.length; i++) {
-      const obs = obstacles[i];
-      ctx.fillStyle = obs.color;
-      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-
-      obs.x -= obs.speed;
-
-      // Collision
-      if (
-        player.x < obs.x + obs.width &&
-        player.x + player.width > obs.x &&
-        player.y < obs.y + obs.height &&
-        player.y + player.height > obs.y
-      ) {
-        endGame();
-      }
-
-      if (obs.x + obs.width < 0) {
-        obstacles.splice(i, 1);
-        score++;
-        scoreDisplay.textContent = score;
-
-        if (score % 5 === 0 && score > 0) obstacleSpeed += 1;
-      }
-    }
-  }
-
-  function applyGravity() {
-    if (player.y < ground.y - player.height) {
-      player.velocityY += player.gravity;
-    } else {
-      player.velocityY = 0;
-      player.y = ground.y - player.height;
-    }
-    player.y += player.velocityY;
-  }
-
-  function jump() {
-    console.log("Прыжок!");
-    if (player.y === ground.y - player.height) {
-      player.velocityY = player.jumpPower;
-    }
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGround();
-    drawPlayer();
-    drawObstacles();
-  }
-
-  function gameLoop() {
-    if (!gameRunning) return;
-
-    obstacleTimer++;
-    if (obstacleTimer > obstacleIntervalTime) {
-      createObstacle();
-      obstacleTimer = 0;
-    }
-
-    applyGravity();
-    draw();
-
-    animationId = requestAnimationFrame(gameLoop);
-  }
-
-  function startGame() {
-    startScreen.style.display = "none";
-    resetGame();
-    gameRunning = true;
-    gameLoop();
-  }
-
-  function endGame() {
-    gameRunning = false;
-    cancelAnimationFrame(animationId);
-    if (score > highScore) {
-      localStorage.setItem("highScore", score);
-      highScore = score;
-      highScoreDisplay.textContent = highScore;
-    }
-    alert(`Игра окончена!\nВаш счёт: ${score}\nРекорд: ${highScore}`);
-    startScreen.style.display = "block";
-  }
-
-  // Управление
-  window.addEventListener("keydown", (e) => {
-    if (e.code === "Space" || e.code === "ArrowUp") jump();
-  });
-
-  startBtn.addEventListener("click", () => {
-    startGame();
-  });
-
-  // Фикс для мобильных
-  jumpBtn.addEventListener("click", () => {
-    jump();
-  });
-
-  jumpBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault(); // убираем задержку
-    jump();
-  });
-</script>
-</body>
-  </html>
+</html>
