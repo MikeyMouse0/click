@@ -16,22 +16,21 @@
       color: #fff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
+      text-align: center;
     }
 
     canvas {
       display: block;
-      margin: 0 auto;
+      margin: 30px auto;
       background: linear-gradient(#444, #111);
       border: 3px solid #555;
       border-radius: 10px;
-      margin-top: 40px;
     }
 
     #scoreboard {
-      text-align: center;
-      margin-top: 20px;
       font-size: 1.5rem;
       font-weight: bold;
+      margin-bottom: 10px;
     }
 
     #startScreen {
@@ -39,12 +38,14 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      text-align: center;
       z-index: 10;
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 10px;
     }
 
-    #startBtn {
-      padding: 10px 20px;
+    #startBtn, #jumpBtn {
+      padding: 12px 24px;
       font-size: 1.2rem;
       background: #28a745;
       color: white;
@@ -52,10 +53,18 @@
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.3s ease;
+      margin: 10px;
     }
 
-    #startBtn:hover {
+    #startBtn:hover, #jumpBtn:hover {
       background: #218838;
+    }
+
+    #jumpBtn {
+      display: block;
+      width: 80%;
+      max-width: 300px;
+      margin: 20px auto;
     }
   </style>
 </head>
@@ -63,11 +72,13 @@
 
 <div id="startScreen">
   <h1>Прыгун</h1>
+  <p>Нажмите пробел или кнопку ниже</p>
   <button id="startBtn">Начать игру</button>
 </div>
 
 <canvas id="gameCanvas" width="600" height="400"></canvas>
-<div id="scoreboard">Счёт: <span id="score">0</span></div>
+<div id="scoreboard">Счёт: <span id="score">0</span> | Рекорд: <span id="highScore">0</span></div>
+<button id="jumpBtn">ПРЫЖОК</button>
 
 <script>
   const canvas = document.getElementById("gameCanvas");
@@ -75,10 +86,11 @@
 
   const startScreen = document.getElementById("startScreen");
   const startBtn = document.getElementById("startBtn");
+  const jumpBtn = document.getElementById("jumpBtn");
   const scoreDisplay = document.getElementById("score");
+  const highScoreDisplay = document.getElementById("highScore");
 
   let gameInterval;
-  let jumpInterval;
   let gravityInterval;
 
   const player = {
@@ -100,9 +112,12 @@
 
   const obstacles = [];
   let obstacleTimer = 0;
-  let obstacleIntervalTime = 1500;
+  let obstacleIntervalTime = 1500; // начальная частота появления препятствий
   let score = 0;
   let highScore = localStorage.getItem("highScore") || 0;
+  let obstacleSpeed = 4;
+
+  highScoreDisplay.textContent = highScore;
 
   function resetGame() {
     player.y = 200;
@@ -111,9 +126,17 @@
     obstacleTimer = 0;
     score = 0;
     scoreDisplay.textContent = score;
+    obstacleSpeed = 4;
   }
 
   function drawPlayer() {
+    // Тень игрока
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.beginPath();
+    ctx.ellipse(player.x + player.width / 2, ground.y + 5, player.width / 2, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Сам игрок
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
   }
@@ -130,7 +153,7 @@
       y: ground.y - height,
       width: 30,
       height: height,
-      speed: 4,
+      speed: obstacleSpeed,
       color: "#ff6b6b"
     };
     obstacles.push(obstacle);
@@ -159,6 +182,11 @@
         obstacles.splice(i, 1);
         score++;
         scoreDisplay.textContent = score;
+
+        // Увеличиваем скорость через каждые 5 очков
+        if (score % 5 === 0 && score > 0) {
+          obstacleSpeed += 1;
+        }
       }
     }
   }
@@ -209,6 +237,7 @@
     if (score > highScore) {
       localStorage.setItem("highScore", score);
       highScore = score;
+      highScoreDisplay.textContent = highScore;
     }
     alert(`Игра окончена!\nВаш счёт: ${score}\nРекорд: ${highScore}`);
     startScreen.style.display = "block";
@@ -224,6 +253,10 @@
   startBtn.addEventListener("click", () => {
     startGame();
   });
+
+  jumpBtn.addEventListener("click", () => {
+    jump();
+  });
 </script>
 </body>
-  </html>
+</html>
