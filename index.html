@@ -1,117 +1,229 @@
-import { useState } from 'react';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Мини-игра: Прыгун</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-export default function App() {
-  const [spinning, setSpinning] = useState(false);
-  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+    body {
+      background: #222;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
 
-  const items = [
-    { id: 1, label: "Приз 1" },
-    { id: 2, label: "Приз 2" },
-    { id: 3, label: "Приз 3" },
-    { id: 4, label: "Приз 4" },
-    { id: 5, label: "Приз 5" },
-    { id: 6, label: "Приз 6" },
-    { id: 7, label: "Приз 7" },
-  ];
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: linear-gradient(#444, #111);
+      border: 3px solid #555;
+      border-radius: 10px;
+      margin-top: 40px;
+    }
 
-  // Для создания эффекта бесконечной ленты — дублируем элементы
-  const extendedItems = [...items, ...items, ...items];
+    #scoreboard {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
 
-  const spinWheel = () => {
-    if (spinning) return;
-    setSpinning(true);
-    setSelectedItemIndex(null);
+    #startScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+    }
 
-    const duration = 4000; // продолжительность вращения
-    const totalSpins = Math.floor(Math.random() * 3 + 5); // 5–7 оборотов
-    const finalIndex = Math.floor(Math.random() * items.length);
-    const offset = -((finalIndex + items.length) * 100); // чтобы попал на оригинальный диапазон
+    #startBtn {
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
 
-    const startTime = performance.now();
+    #startBtn:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
 
-    const animate = (time) => {
-      const elapsed = time - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easing = 1 - Math.pow(1 - progress, 3); // плавное замедление
+<div id="startScreen">
+  <h1>Прыгун</h1>
+  <button id="startBtn">Начать игру</button>
+</div>
 
-      const currentOffset =
-        -((totalSpins + easing * finalIndex / items.length) * 100 * items.length);
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<div id="scoreboard">Счёт: <span id="score">0</span></div>
 
-      document.querySelector('.roulette-items').style.transform = `translateX(${currentOffset}px)`;
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
 
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        setSpinning(false);
-        setSelectedItemIndex(finalIndex);
-      }
-    };
+  const startScreen = document.getElementById("startScreen");
+  const startBtn = document.getElementById("startBtn");
+  const scoreDisplay = document.getElementById("score");
 
-    requestAnimationFrame(animate);
+  let gameInterval;
+  let jumpInterval;
+  let gravityInterval;
+
+  const player = {
+    x: 50,
+    y: 200,
+    width: 40,
+    height: 40,
+    velocityY: 0,
+    gravity: 1,
+    jumpPower: -15,
+    color: "#00ffcc"
   };
 
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
-        Цикличная Рулетка
-      </h1>
+  const ground = {
+    y: canvas.height - 50,
+    height: 50,
+    color: "#333"
+  };
 
-      <div className="w-full max-w-4xl relative overflow-hidden h-40 mb-8 rounded-lg border border-white/10 bg-black/20">
-        <div
-          className="roulette-items flex transition-transform duration-500 ease-out"
-          style={{
-            width: `${extendedItems.length * 100}px`,
-            transform: spinning ? 'translateX(0)' : 'translateX(0)',
-          }}
-        >
-          {extendedItems.map((item, index) => {
-            const isActive = selectedItemIndex !== null && index % items.length === selectedItemIndex;
-            return (
-              <div
-                key={`${item.id}-${index}`}
-                className={`w-full flex-shrink-0 h-40 flex items-center justify-center border-x border-white/20 transition-all duration-300 ${
-                  isActive ? 'scale-110 bg-white/20 shadow-lg' : 'bg-black/10'
-                }`}
-              >
-                <span className={isActive ? 'text-yellow-400 font-bold text-xl' : 'text-white/70'}>
-                  {item.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+  const obstacles = [];
+  let obstacleTimer = 0;
+  let obstacleIntervalTime = 1500;
+  let score = 0;
+  let highScore = localStorage.getItem("highScore") || 0;
 
-        {/* Указатель */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-black/30 backdrop-blur-sm border-4 border-white flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-3 h-3 bg-white rounded-full"></div>
-        </div>
-      </div>
+  function resetGame() {
+    player.y = 200;
+    player.velocityY = 0;
+    obstacles.length = 0;
+    obstacleTimer = 0;
+    score = 0;
+    scoreDisplay.textContent = score;
+  }
 
-      <button
-        onClick={spinWheel}
-        disabled={spinning}
-        className={`
-          px-8 py-3 rounded-full font-bold text-lg shadow-lg
-          bg-gradient-to-r from-white to-gray-500 text-black
-          hover:from-gray-200 hover:to-gray-400
-          active:scale-95 transition-all duration-200
-          disabled:opacity-50 disabled:cursor-not-allowed
-        `}
-      >
-        {spinning ? 'Крутится...' : 'Запустить рулетку'}
-      </button>
+  function drawPlayer() {
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+  }
 
-      {selectedItemIndex !== null && (
-        <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10 text-center">
-          <p className="text-xl">
-            Вы выиграли: <span className="font-bold text-yellow-400">{items[selectedItemIndex].label}</span>
-          </p>
-        </div>
-      )}
+  function drawGround() {
+    ctx.fillStyle = ground.color;
+    ctx.fillRect(0, ground.y, canvas.width, ground.height);
+  }
 
-      <footer className="absolute bottom-4 text-white/30 text-sm">
-        &copy; 2025 Горизонтальная цикличная рулетка
-      </footer>
-    </div>
-  );
-}
+  function createObstacle() {
+    const height = Math.floor(Math.random() * 30) + 30;
+    const obstacle = {
+      x: canvas.width,
+      y: ground.y - height,
+      width: 30,
+      height: height,
+      speed: 4,
+      color: "#ff6b6b"
+    };
+    obstacles.push(obstacle);
+  }
+
+  function drawObstacles() {
+    for (let i = 0; i < obstacles.length; i++) {
+      const obs = obstacles[i];
+      ctx.fillStyle = obs.color;
+      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+      obs.x -= obs.speed;
+
+      // Collision detection
+      if (
+        player.x < obs.x + obs.width &&
+        player.x + player.width > obs.x &&
+        player.y < obs.y + obs.height &&
+        player.y + player.height > obs.y
+      ) {
+        endGame();
+      }
+
+      // Remove offscreen
+      if (obs.x + obs.width < 0) {
+        obstacles.splice(i, 1);
+        score++;
+        scoreDisplay.textContent = score;
+      }
+    }
+  }
+
+  function applyGravity() {
+    if (player.y < ground.y - player.height) {
+      player.velocityY += player.gravity;
+    } else {
+      player.velocityY = 0;
+      player.y = ground.y - player.height;
+    }
+    player.y += player.velocityY;
+  }
+
+  function jump() {
+    if (player.y === ground.y - player.height) {
+      player.velocityY = player.jumpPower;
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGround();
+    drawPlayer();
+    drawObstacles();
+  }
+
+  function gameLoop() {
+    obstacleTimer++;
+    if (obstacleTimer > obstacleIntervalTime) {
+      createObstacle();
+      obstacleTimer = 0;
+    }
+
+    applyGravity();
+    draw();
+  }
+
+  function startGame() {
+    startScreen.style.display = "none";
+    resetGame();
+    if (gameInterval) clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+  }
+
+  function endGame() {
+    clearInterval(gameInterval);
+    if (score > highScore) {
+      localStorage.setItem("highScore", score);
+      highScore = score;
+    }
+    alert(`Игра окончена!\nВаш счёт: ${score}\nРекорд: ${highScore}`);
+    startScreen.style.display = "block";
+  }
+
+  // Controls
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      jump();
+    }
+  });
+
+  startBtn.addEventListener("click", () => {
+    startGame();
+  });
+</script>
+</body>
+  </html>
