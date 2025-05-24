@@ -12,8 +12,8 @@
     }
 
     body {
-      background: #222;
-      color: #fff;
+      background-color: #fff;
+      color: #000;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
       text-align: center;
@@ -22,15 +22,17 @@
     canvas {
       display: block;
       margin: 30px auto;
-      background: linear-gradient(#444, #111);
-      border: 3px solid #555;
-      border-radius: 10px;
+      background: linear-gradient(#f0f0f0, #ccc);
+      border: 2px solid #999;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     #scoreboard {
       font-size: 1.5rem;
       font-weight: bold;
       margin-bottom: 10px;
+      color: #333;
     }
 
     #startScreen {
@@ -39,25 +41,40 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 10;
-      background: rgba(0,0,0,0.7);
-      padding: 20px;
-      border-radius: 10px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #222;
+    }
+
+    p {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #555;
     }
 
     #startBtn, #jumpBtn {
       padding: 12px 24px;
-      font-size: 1.2rem;
-      background: #28a745;
-      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #222;
+      color: #fff;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s ease;
-      margin: 10px;
+      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
     }
 
     #startBtn:hover, #jumpBtn:hover {
-      background: #218838;
+      background: #444;
+      transform: scale(1.05);
     }
 
     #jumpBtn {
@@ -65,6 +82,11 @@
       width: 80%;
       max-width: 300px;
       margin: 20px auto;
+      background: #555;
+    }
+
+    #jumpBtn:hover {
+      background: #777;
     }
   </style>
 </head>
@@ -90,8 +112,8 @@
   const scoreDisplay = document.getElementById("score");
   const highScoreDisplay = document.getElementById("highScore");
 
-  let gameInterval;
-  let gravityInterval;
+  let gameRunning = false;
+  let animationId;
 
   const player = {
     x: 50,
@@ -101,18 +123,18 @@
     velocityY: 0,
     gravity: 1,
     jumpPower: -15,
-    color: "#00ffcc"
+    color: "#888"
   };
 
   const ground = {
     y: canvas.height - 50,
     height: 50,
-    color: "#333"
+    color: "#ddd"
   };
 
   const obstacles = [];
   let obstacleTimer = 0;
-  let obstacleIntervalTime = 1500; // начальная частота появления препятствий
+  let obstacleIntervalTime = 1500;
   let score = 0;
   let highScore = localStorage.getItem("highScore") || 0;
   let obstacleSpeed = 4;
@@ -131,7 +153,7 @@
 
   function drawPlayer() {
     // Тень игрока
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.beginPath();
     ctx.ellipse(player.x + player.width / 2, ground.y + 5, player.width / 2, 5, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -154,7 +176,7 @@
       width: 30,
       height: height,
       speed: obstacleSpeed,
-      color: "#ff6b6b"
+      color: "#222"
     };
     obstacles.push(obstacle);
   }
@@ -183,7 +205,6 @@
         score++;
         scoreDisplay.textContent = score;
 
-        // Увеличиваем скорость через каждые 5 очков
         if (score % 5 === 0 && score > 0) {
           obstacleSpeed += 1;
         }
@@ -215,6 +236,8 @@
   }
 
   function gameLoop() {
+    if (!gameRunning) return;
+
     obstacleTimer++;
     if (obstacleTimer > obstacleIntervalTime) {
       createObstacle();
@@ -223,17 +246,20 @@
 
     applyGravity();
     draw();
+
+    animationId = requestAnimationFrame(gameLoop);
   }
 
   function startGame() {
     startScreen.style.display = "none";
     resetGame();
-    if (gameInterval) clearInterval(gameInterval);
-    gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+    gameRunning = true;
+    gameLoop();
   }
 
   function endGame() {
-    clearInterval(gameInterval);
+    gameRunning = false;
+    cancelAnimationFrame(animationId);
     if (score > highScore) {
       localStorage.setItem("highScore", score);
       highScore = score;
@@ -255,6 +281,12 @@
   });
 
   jumpBtn.addEventListener("click", () => {
+    jump();
+  });
+
+  // Поддержка touch-устройств
+  jumpBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault(); // предотвращаем задержку
     jump();
   });
 </script>
