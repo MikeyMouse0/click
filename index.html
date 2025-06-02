@@ -1,278 +1,664 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Мини-игра: Прыгун</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: #fff;
-      color: #000;
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-    }
-
-    canvas {
-      display: block;
-      margin: 30px auto;
-      background: linear-gradient(#f0f0f0, #ccc);
-      border: 2px solid #999;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    #scoreboard {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    #startScreen {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    #startBtn, #jumpBtn {
-      padding: 12px 24px;
-      font-size: 1rem;
-      font-weight: bold;
-      background: #222;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 10px;
-      transition: background 0.3s ease;
-    }
-
-    #startBtn:hover,
-    #jumpBtn:hover {
-      background: #444;
-    }
-
-    #jumpBtn {
-      display: block;
-      width: 80%;
-      max-width: 300px;
-      margin: 20px auto;
-      background: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemeLand</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #000000, #1a1a1a);
+            color: #ffffff;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        body.light {
+            background: linear-gradient(180deg, #e0e0e0, #ffffff);
+            color: #000000;
+        }
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            padding: 12px;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .header.light {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), transparent);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .header.light h1 {
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .meme-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            border-radius: 12px;
+            padding: 16px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        .light .meme-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.05));
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .meme-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        .meme-card img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: filter 0.5s ease;
+        }
+        .meme-card img.nsfw {
+            filter: blur(20px);
+            cursor: pointer;
+        }
+        .meme-card img.nsfw.revealed {
+            filter: blur(0);
+        }
+        .light .meme-card img {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .meme-card h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .meme-card p {
+            margin: 0 0 4px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .meme-card .tag {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 4px 0 0;
+        }
+        .light .meme-card .tag {
+            color: rgba(0, 0, 0, 0.7);
+        }
+        .meme-card .nsfw-warning {
+            font-size: 12px;
+            color: #ff4d4d;
+            margin: 4px 0 0;
+            text-align: center;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .navbar.hidden {
+            transform: translateY(100%);
+        }
+        .light .navbar {
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.5), transparent);
+            border-top: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .nav-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .light .nav-button {
+            color: #000000;
+        }
+        .nav-button:hover, .nav-button.active {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            transform: translateY(-2px);
+        }
+        .light .nav-button:hover, .light .nav-button.active {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));
+        }
+        .nav-button i {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+        .nav-button:hover i {
+            transform: scale(1.2);
+        }
+        .toggle-nav {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 11;
+            transition: all 0.3s ease;
+        }
+        .light .toggle-nav {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+        }
+        .toggle-nav:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3));
+            transform: scale(1.1);
+        }
+        .light .toggle-nav:hover {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+        }
+        .toggle-nav i {
+            font-size: 20px;
+            color: #ffffff;
+        }
+        .light .toggle-nav i {
+            color: #000000;
+        }
+        .upload-section, .settings-section, .profile-section, .search-section, .moderation-section {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px 16px 80px 16px;
+        }
+        .upload-section input, .upload-section textarea, .profile-section textarea, .settings-section button, .search-section input {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        .light .upload-section input, .light .upload-section textarea, .light .profile-section textarea, .light .settings-section button, .light .search-section input {
+            background: rgba(0, 0, 0, 0.15);
+            color: #000000;
+        }
+        .upload-section input:hover, .upload-section textarea:hover, .profile-section textarea:hover, .settings-section button:hover, .search-section input:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .light .upload-section input:hover, .light .upload-section textarea:hover, .light .profile-section textarea:hover, .light .settings-section button:hover, .light .search-section input:hover {
+            background: rgba(0, 0, 0, 0.25);
+        }
+        .upload-section .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .upload-section input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #ff4d4d;
+        }
+        .upload-section button, .profile-section button, .settings-section button, .moderation-section button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .light .upload-section button, .light .profile-section button, .light .settings-section button, .light .moderation-section button {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            color: #000000;
+        }
+        .upload-section button:hover, .profile-section button:hover, .settings-section button:hover, .moderation-section button:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3));
+            transform: translateY(-2px);
+        }
+        .light .upload-section button:hover, .light .profile-section button:hover, .light .settings-section button:hover, .light .moderation-section button:hover {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
+        }
+        .profile-section img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .light .profile-section img {
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        .profile-section h3 {
+            margin: 8px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .fade-in {
+            animation: pulse 0.5s ease forwards;
+        }
+        @keyframes slide {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 MemeLand 🔥</h1>
+        </div>
+        <div class="content" id="content">
+            <!-- Мемы будут добавляться сюда -->
+        </div>
+        <div class="upload-section" id="upload-section">
+            <input type="text" id="meme-title" placeholder="Название мема">
+            <textarea id="meme-description" placeholder="Описание мема" rows="4"></textarea>
+            <input type="text" id="meme-tag" placeholder="Тег (например, #юмор)">
+            <div class="checkbox-container">
+                <input type="checkbox" id="meme-nsfw">
+                <label for="meme-nsfw">18+</label>
+            </div>
+            <input type="file" accept="image/*" id="meme-upload">
+            <button onclick="uploadMeme()">Залить мемас!</button>
+        </div>
+        <div class="settings-section" id="settings-section">
+            <button onclick="toggleTheme()">Переключить на <span id="theme-text">светлый вайб</span></button>
+            <button onclick="showSection('profile-section')">Профиль</button>
+        </div>
+        <div class="profile-section" id="profile-section">
+            <img id="profile-photo" src="https://via.placeholder.com/80" alt="Profile Photo">
+            <h3 id="profile-username">Загрузка...</h3>
+            <textarea id="profile-description" placeholder="О себе" rows="4"></textarea>
+            <button onclick="saveProfileDescription()">Сохранить описание</button>
+        </div>
+        <div class="search-section" id="search-section">
+            <input type="text" id="search-username" placeholder="Введите ник (@username)">
+            <button onclick="searchByUsername()">Найти мемы</button>
+        </div>
+        <div class="moderation-section" id="moderation-section">
+            <div id="pending-memes">
+                <!-- Мемы на модерацию будут добавляться сюда -->
+            </div>
+        </div>
+        <div class="navbar" id="navbar">
+            <button class="nav-button active" onclick="showSection('content')">
+                <i class="fas fa-laugh-squint"></i>
+                Мемы
+            </button>
+            <button class="nav-button" onclick="showSection('upload-section')">
+                <i class="fas fa-upload"></i>
+                Свой мем
+            </button>
+            <button class="nav-button" onclick="showSection('search-section')">
+                <i class="fas fa-search"></i>
+                Поиск
+            </button>
+            <button class="nav-button" id="moderation-button" style="display: none;" onclick="showSection('moderation-section')">
+                <i class="fas fa-shield-alt"></i>
+                Модерация
+            </button>
+            <button class="nav-button" onclick="showSection('settings-section')">
+                <i class="fas fa-cog"></i>
+                Настройки
+            </button>
+        </div>
+        <button class="toggle-nav" onclick="toggleNavbar()">
+            <i id="toggle-icon" class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+    <script>
+        let currentTheme = 'dark';
+        let isNavbarHidden = false;
+        const MODERATOR_IDS = [123456789, 987654321]; // Список ID модераторов
 
-<div id="startScreen">
-  <h1>Прыгун</h1>
-  <p>Нажмите пробел или кнопку ниже</p>
-  <button id="startBtn">Начать игру</button>
-</div>
+        function showSection(sectionId) {
+            document.querySelectorAll('.content, .upload-section, .settings-section, .profile-section, .search-section, .moderation-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'flex';
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        }
 
-<canvas id="gameCanvas" width="600" height="400"></canvas>
-<div id="scoreboard">Счёт: <span id="score">0</span> | Рекорд: <span id="highScore">0</span></div>
-<button id="jumpBtn">ПРЫЖОК</button>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            isNavbarHidden = !isNavbarHidden;
+            if (isNavbarHidden) {
+                navbar.classList.add('hidden');
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+            } else {
+                navbar.classList.remove('hidden');
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+            }
+        }
 
-<script>
-  // === DOM Elements ===
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
+        async function uploadMeme() {
+            const fileInput = document.getElementById('meme-upload');
+            const titleInput = document.getElementById('meme-title');
+            const descriptionInput = document.getElementById('meme-description');
+            const tagInput = document.getElementById('meme-tag');
+            const nsfwInput = document.getElementById('meme-nsfw');
+            const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
 
-  const startScreen = document.getElementById("startScreen");
-  const startBtn = document.getElementById("startBtn");
-  const jumpBtn = document.getElementById("jumpBtn");
-  const scoreDisplay = document.getElementById("score");
-  const highScoreDisplay = document.getElementById("highScore");
+            if (!userId) {
+                alert('Ошибка: пользователь не авторизован!');
+                return;
+            }
 
-  let animationId;
-  let gameRunning = false;
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const response = await fetch('YOUR_SERVER_ENDPOINT/upload_meme', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                title: titleInput.value,
+                                description: descriptionInput.value,
+                                tag: tagInput.value,
+                                nsfw: nsfwInput.checked,
+                                image_data: e.target.result,
+                                user_id: userId
+                            })
+                        });
+                        if (response.ok) {
+                            alert('Мем отправлен на модерацию, бро!');
+                            showSection('content');
+                            titleInput.value = '';
+                            descriptionInput.value = '';
+                            tagInput.value = '';
+                            nsfwInput.checked = false;
+                            fileInput.value = '';
+                            await loadMemes();
+                        } else {
+                            alert('Ошибка при загрузке мема!');
+                        }
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('Ошибка сети, попробуй позже!');
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Выбери картинку, бро!');
+            }
+        }
 
-  // === Game State / Player / Ground ===
-  const player = {
-    x: 50,
-    y: 200,
-    width: 40,
-    height: 40,
-    velocityY: 0,
-    gravity: 1,
-    jumpPower: -15,
-    color: "#888"
-  };
+        async function loadMemes() {
+            try {
+                const response = await fetch('YOUR_SERVER_ENDPOINT/get_memes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const memes = await response.json();
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                memes.forEach(meme => {
+                    const memeCard = document.createElement('div');
+                    memeCard.className = 'meme-card fade-in';
+                    const imgClass = meme.nsfw ? 'nsfw' : '';
+                    memeCard.innerHTML = `
+                        <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
+                        ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
+                        <h3>${meme.title || 'Без названия'}</h3>
+                        <p>${meme.description || 'Без описания'}</p>
+                        <p class="tag">${meme.tag || '#безтега'}</p>
+                    `;
+                    if (meme.nsfw) {
+                        memeCard.querySelector('img').onclick = function() {
+                            if (confirm('Это контент 18+. Показать?')) {
+                                this.classList.add('revealed');
+                            }
+                        };
+                    }
+                    content.appendChild(memeCard);
+                });
+            } catch (error) {
+                console.error('Load memes error:', error);
+                alert('Ошибка загрузки мемов!');
+            }
+        }
 
-  const ground = {
-    y: canvas.height - 50,
-    height: 50,
-    color: "#ddd"
-  };
+        async function loadPendingMemes() {
+            try {
+                const response = await fetch('YOUR_SERVER_ENDPOINT/get_pending_memes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const memes = await response.json();
+                const pendingMemes = document.getElementById('pending-memes');
+                pendingMemes.innerHTML = '';
+                memes.forEach(meme => {
+                    const memeCard = document.createElement('div');
+                    memeCard.className = 'meme-card fade-in';
+                    memeCard.innerHTML = `
+                        <img src="${meme.image_data}" alt="Pending Meme">
+                        <h3>${meme.title || 'Без названия'}</h3>
+                        <p>${meme.description || 'Без описания'}</p>
+                        <p class="tag">${meme.tag || '#безтега'}</p>
+                        ${meme.nsfw ? '<p class="nsfw-warning">18+</p>' : ''}
+                    `;
+                    const approveButton = document.createElement('button');
+                    approveButton.textContent = 'Одобрить';
+                    approveButton.onclick = async () => {
+                        try {
+                            await fetch('YOUR_SERVER_ENDPOINT/update_meme_status', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ meme_id: meme.id, status: 'approved' })
+                            });
+                            alert('Мем одобрен!');
+                            await loadPendingMemes();
+                            await loadMemes();
+                        } catch (error) {
+                            console.error('Approve error:', error);
+                            alert('Ошибка при одобрении мема!');
+                        }
+                    };
+                    const rejectButton = document.createElement('button');
+                    rejectButton.textContent = 'Отклонить';
+                    rejectButton.onclick = async () => {
+                        try {
+                            await fetch('YOUR_SERVER_ENDPOINT/update_meme_status', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ meme_id: meme.id, status: 'rejected' })
+                            });
+                            alert('Мем отклонён!');
+                            await loadPendingMemes();
+                        } catch (error) {
+                            console.error('Reject error:', error);
+                            alert('Ошибка при отклонении мема!');
+                        }
+                    };
+                    memeCard.appendChild(approveButton);
+                    memeCard.appendChild(rejectButton);
+                    pendingMemes.appendChild(memeCard);
+                });
+            } catch (error) {
+                console.error('Load pending memes error:', error);
+                alert('Ошибка загрузки мемов на модерацию!');
+            }
+        }
 
-  const obstacles = [];
-  let obstacleTimer = 0;
-  let obstacleIntervalTime = 1500;
-  let score = 0;
-  let highScore = localStorage.getItem("highScore") || 0;
-  let obstacleSpeed = 4;
+        async function searchByUsername() {
+            const usernameInput = document.getElementById('search-username');
+            const username = usernameInput.value.trim();
+            if (!username) {
+                alert('Введите никнейм!');
+                return;
+            }
+            try {
+                const response = await fetch('YOUR_SERVER_ENDPOINT/search_by_username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const memes = await response.json();
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                if (memes.length === 0) {
+                    content.innerHTML = '<h3>Мемы не найдены!</h3>';
+                    showSection('content');
+                    return;
+                }
+                memes.forEach(meme => {
+                    const memeCard = document.createElement('div');
+                    memeCard.className = 'meme-card fade-in';
+                    const imgClass = meme.nsfw ? 'nsfw' : '';
+                    memeCard.innerHTML = `
+                        <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
+                        ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
+                        <h3>${meme.title || 'Без названия'}</h3>
+                        <p>${meme.description || 'Без описания'}</p>
+                        <p class="tag">${meme.tag || '#безтега'}</p>
+                    `;
+                    if (meme.nsfw) {
+                        memeCard.querySelector('img').onclick = function() {
+                            if (confirm('Это контент 18+. Показать?')) {
+                                this.classList.add('revealed');
+                            }
+                        };
+                    }
+                    content.appendChild(memeCard);
+                });
+                showSection('content');
+                usernameInput.value = '';
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Ошибка поиска мемов!');
+            }
+        }
 
-  highScoreDisplay.textContent = highScore;
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.className = currentTheme;
+            document.querySelector('.header').className = `header ${currentTheme}`;
+            document.getElementById('theme-text').textContent = currentTheme === 'dark' ? 'светлый вайб' : 'темная тема';
+        }
 
-  // === Functions ===
+        async function saveProfileDescription() {
+            const description = document.getElementById('profile-description').value;
+            const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+            if (!userId) {
+                alert('Ошибка: пользователь не авторизован!');
+                return;
+            }
+            try {
+                const response = await fetch('YOUR_SERVER_ENDPOINT/update_description', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, description })
+                });
+                if (response.ok) {
+                    alert('Описание сохранено, бро!');
+                } else {
+                    alert('Ошибка при сохранении описания!');
+                }
+            } catch (error) {
+                console.error('Save profile error:', error);
+                alert('Ошибка сети, попробуй позже!');
+            }
+        }
 
-  function resetGame() {
-    player.y = 200;
-    player.velocityY = 0;
-    obstacles.length = 0;
-    obstacleTimer = 0;
-    score = 0;
-    scoreDisplay.textContent = score;
-    obstacleSpeed = 4;
-  }
+        async function initProfile() {
+            if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                console.warn('Telegram Web App user data not available');
+                return;
+            }
+            try {
+                const user = window.Telegram.WebApp.initDataUnsafe.user;
+                const userId = Number(user.id);
+                document.getElementById('profile-username').textContent = user.username ? `@${user.username}` : user.first_name;
+                if (user.photo_url) {
+                    document.getElementById('profile-photo').src = user.photo_url;
+                }
+                // Показать кнопку модерации, если пользователь - модератор
+                if (MODERATOR_IDS.includes(userId)) {
+                    document.getElementById('moderation-button').style.display = 'block';
+                    await loadPendingMemes();
+                }
+                const response = await fetch('YOUR_SERVER_ENDPOINT/get_description', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await response.json();
+                document.getElementById('profile-description').value = data.description || '';
+            } catch (error) {
+                console.error('Init profile error:', error);
+                document.getElementById('profile-description').value = 'Ошибка загрузки описания';
+            }
+        }
 
-  function drawPlayer() {
-    // Тень под игроком
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.beginPath();
-    ctx.ellipse(player.x + player.width / 2, ground.y + 5, player.width / 2, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Игрок
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-  }
-
-  function drawGround() {
-    ctx.fillStyle = ground.color;
-    ctx.fillRect(0, ground.y, canvas.width, ground.height);
-  }
-
-  function createObstacle() {
-    const height = Math.floor(Math.random() * 30) + 30;
-    const obstacle = {
-      x: canvas.width,
-      y: ground.y - height,
-      width: 30,
-      height: height,
-      speed: obstacleSpeed,
-      color: "#222"
-    };
-    obstacles.push(obstacle);
-  }
-
-  function drawObstacles() {
-    for (let i = 0; i < obstacles.length; i++) {
-      const obs = obstacles[i];
-      ctx.fillStyle = obs.color;
-      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-
-      obs.x -= obs.speed;
-
-      // Collision detection
-      if (
-        player.x < obs.x + obs.width &&
-        player.x + player.width > obs.x &&
-        player.y < obs.y + obs.height &&
-        player.y + player.height > obs.y
-      ) {
-        endGame();
-      }
-
-      // Remove offscreen
-      if (obs.x + obs.width < 0) {
-        obstacles.splice(i, 1);
-        score++;
-        scoreDisplay.textContent = score;
-
-        if (score % 5 === 0 && score > 0) obstacleSpeed += 1;
-      }
-    }
-  }
-
-  function applyGravity() {
-    if (player.y < ground.y - player.height) {
-      player.velocityY += player.gravity;
-    } else {
-      player.velocityY = 0;
-      player.y = ground.y - player.height;
-    }
-    player.y += player.velocityY;
-  }
-
-  function jump() {
-    if (player.y === ground.y - player.height) {
-      player.velocityY = player.jumpPower;
-    }
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGround();
-    drawPlayer();
-    drawObstacles();
-  }
-
-  function gameLoop() {
-    if (!gameRunning) return;
-
-    obstacleTimer++;
-    if (obstacleTimer > obstacleIntervalTime) {
-      createObstacle();
-      obstacleTimer = 0;
-    }
-
-    applyGravity();
-    draw();
-
-    animationId = requestAnimationFrame(gameLoop);
-  }
-
-  function startGame() {
-    startScreen.style.display = "none";
-    resetGame();
-    gameRunning = true;
-    gameLoop();
-  }
-
-  function endGame() {
-    gameRunning = false;
-    cancelAnimationFrame(animationId);
-    if (score > highScore) {
-      localStorage.setItem("highScore", score);
-      highScore = score;
-      highScoreDisplay.textContent = highScore;
-    }
-    alert(`Игра окончена!\nВаш счёт: ${score}\nРекорд: ${highScore}`);
-    startScreen.style.display = "block";
-  }
-
-  // === Event Listeners ===
-
-  window.addEventListener("keydown", (e) => {
-    if (e.code === "Space" || e.code === "ArrowUp") {
-      jump();
-    }
-  });
-
-  startBtn.addEventListener("click", () => {
-    startGame();
-  });
-
-  jumpBtn.addEventListener("click", () => {
-    jump();
-  });
-
-  jumpBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault(); // убирает задержку на мобильных
-    jump();
-  });
-</script>
+        if (window.Telegram?.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            initProfile();
+            loadMemes();
+        }
+    </script>
 </body>
 </html>
