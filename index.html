@@ -13,7 +13,6 @@
             background: linear-gradient(180deg, #000000, #1a1a1a);
             color: #ffffff;
             overflow-x: hidden;
-            /* Убрано user-select: none для корректного ввода */
         }
         body.light {
             background: linear-gradient(180deg, #e0e0e0, #ffffff);
@@ -225,7 +224,6 @@
             color: #ffffff;
             font-size: 14px;
             transition: background 0.3s ease;
-            /* Убедимся, что поля редактируемы */
             -webkit-user-select: text;
             -moz-user-select: text;
             -ms-user-select: text;
@@ -409,12 +407,16 @@
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.ready();
                 console.log('Telegram Web App инициализирован:', window.Telegram.WebApp.initDataUnsafe);
-                initProfile();
-                loadMemes();
+                initializeApp();
             } else {
                 console.error('Telegram Web App не доступен');
                 alert('Ошибка: приложение должно быть открыто в Telegram!');
             }
+        }
+
+        async function initializeApp() {
+            await initProfile();
+            await loadMemes();
         }
 
         async function uploadMeme() {
@@ -435,6 +437,9 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     try {
+                        const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
+                        if (!ping.ok) throw new Error('Бэкенд недоступен');
+
                         console.log('Отправка запроса на /upload_meme с данными:', {
                             title: titleInput.value,
                             description: descriptionInput.value,
@@ -445,16 +450,16 @@
                         const response = await fetch(`${SERVER_URL}/upload_meme`, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
-                                'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                                'X-Telegram-User': JSON.stringify(user)
+                                'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
                                 title: titleInput.value,
                                 description: descriptionInput.value,
                                 tag: tagInput.value,
                                 nsfw: nsfwInput.checked,
-                                image_data: e.target.result
+                                image_data: e.target.result,
+                                telegram_init_data: window.Telegram.WebApp.initData,
+                                telegram_user: JSON.stringify(user)
                             })
                         });
                         if (response.ok) {
@@ -471,8 +476,8 @@
                             alert(`Ошибка при загрузке мема: ${error.error || 'Неизвестная ошибка'}`);
                         }
                     } catch (error) {
-                        console.error('Ошибка сети или сервера:', error);
-                        alert('Ошибка сети, попробуй позже! Проверь консоль для деталей.');
+                        console.error('Ошибка загрузки мема:', error);
+                        alert('Ошибка загрузки мема! Проверьте консоль или убедитесь, что бэкенд работает.');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -483,40 +488,60 @@
 
         async function loadMemes() {
             try {
+                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
+                if (!ping.ok) throw new Error('Бэкенд недоступен');
+
+                const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                if (!user) throw new Error('Пользователь не авторизован');
+
+                console.log('Отправка запроса на /get_memes с данными:', {
+                    telegram_init_data: window.Telegram.WebApp.initData.substring(0, 50) + '...',
+                    telegram_user: JSON.stringify(user)
+                });
                 const response = await fetch(`${SERVER_URL}/get_memes`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                        'X-Telegram-User': JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_init_data: window.Telegram.WebApp.initData,
+                        telegram_user: JSON.stringify(user)
+                    })
                 });
+                if (!response.ok) {
+                    throw new Error(`Сбой запроса: ${response.status} ${response.statusText}`);
+                }
                 const memes = await response.json();
+                console.log('Полученные мемы:', memes);
                 const content = document.getElementById('content');
                 content.innerHTML = '';
-                memes.forEach(meme => {
-                    const memeCard = document.createElement('div');
-                    memeCard.className = 'meme-card fade-in';
-                    const imgClass = meme.nsfw ? 'nsfw' : '';
-                    memeCard.innerHTML = `
-                        <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
-                        ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
-                        <h3>${meme.title || 'Без названия'}</h3>
-                        <p>${meme.description || 'Без описания'}</p>
-                        <p class="tag">${meme.tag || '#безтега'}</p>
-                    `;
-                    if (meme.nsfw) {
-                        memeCard.querySelector('img').onclick = function() {
-                            if (confirm('Это контент 18+. Показать?')) {
-                                this.classList.add('revealed');
-                            }
-                        };
-                    }
-                    content.appendChild(memeCard);
-                });
+                if (!Array.isArray(memes) || memes.length === 0) {
+                    content.innerHTML = '<h3>Мемы не найдены!</h3>';
+                } else {
+                    memes.forEach(meme => {
+                        const memeCard = document.createElement('div');
+                        memeCard.className = 'meme-card fade-in';
+                        const imgClass = meme.nsfw ? 'nsfw' : '';
+                        memeCard.innerHTML = `
+                            <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
+                            ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
+                            <h3>${meme.title || 'Без названия'}</h3>
+                            <p>${meme.description || 'Без описания'}</p>
+                            <p class="tag">${meme.tag || '#безтега'}</p>
+                        `;
+                        if (meme.nsfw) {
+                            memeCard.querySelector('img').onclick = function() {
+                                if (confirm('Это контент 18+. Показать?')) {
+                                    this.classList.add('revealed');
+                                }
+                            };
+                        }
+                        content.appendChild(memeCard);
+                    });
+                }
             } catch (error) {
                 console.error('Ошибка загрузки мемов:', error);
-                alert('Ошибка загрузки мемов!');
+                alert('Ошибка загрузки мемов! Проверьте консоль или убедитесь, что бэкенд работает.');
             }
         }
 
@@ -525,10 +550,12 @@
                 const response = await fetch(`${SERVER_URL}/get_pending_memes`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                        'X-Telegram-User': JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_init_data: window.Telegram.WebApp.initData,
+                        telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                    })
                 });
                 if (response.status === 403) {
                     alert('Доступ запрещён: вы не модератор!');
@@ -554,11 +581,14 @@
                             await fetch(`${SERVER_URL}/update_meme_status`, {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                                    'X-Telegram-User': JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                                    'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ meme_id: meme.id, status: 'approved' })
+                                body: JSON.stringify({
+                                    meme_id: meme.id,
+                                    status: 'approved',
+                                    telegram_init_data: window.Telegram.WebApp.initData,
+                                    telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                                })
                             });
                             alert('Мем одобрен!');
                             await loadPendingMemes();
@@ -575,11 +605,14 @@
                             await fetch(`${SERVER_URL}/update_meme_status`, {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                                    'X-Telegram-User': JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                                    'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ meme_id: meme.id, status: 'rejected' })
+                                body: JSON.stringify({
+                                    meme_id: meme.id,
+                                    status: 'rejected',
+                                    telegram_init_data: window.Telegram.WebApp.initData,
+                                    telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                                })
                             });
                             alert('Мем отклонён!');
                             await loadPendingMemes();
@@ -609,11 +642,13 @@
                 const response = await fetch(`${SERVER_URL}/search_by_username`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                        'X-Telegram-User': JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username })
+                    body: JSON.stringify({
+                        username: username,
+                        telegram_init_data: window.Telegram.WebApp.initData,
+                        telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
+                    })
                 });
                 const memes = await response.json();
                 const content = document.getElementById('content');
@@ -666,15 +701,20 @@
                 return;
             }
             try {
+                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
+                if (!ping.ok) throw new Error('Бэкенд недоступен');
+
                 console.log('Отправка запроса на /update_description с данными:', { description });
                 const response = await fetch(`${SERVER_URL}/update_description`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                        'X-Telegram-User': JSON.stringify(user)
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ description })
+                    body: JSON.stringify({
+                        description: description,
+                        telegram_init_data: window.Telegram.WebApp.initData,
+                        telegram_user: JSON.stringify(user)
+                    })
                 });
                 if (response.ok) {
                     alert('Описание сохранено, бро!');
@@ -683,25 +723,27 @@
                     alert(`Ошибка при сохранении описания: ${error.error || 'Неизвестная ошибка'}`);
                 }
             } catch (error) {
-                console.error('Ошибка сети или сервера:', error);
-                alert('Ошибка сети, попробуй позже! Проверь консоль для деталей.');
+                console.error('Ошибка загрузки описания:', error);
+                alert('Ошибка загрузки описания! Проверьте консоль или убедитесь, что бэкенд работает.');
             }
         }
 
         async function initProfile() {
-            if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            if (!user) {
                 console.warn('Данные пользователя Telegram Web App недоступны');
-                alert('Ошибка: пользователь не авторизован! Попробуйте нажать "Авторизоваться" в настройках.');
+                alert('Ошибка: пользователь не авторизован! Откройте приложение через Telegram или нажмите "Авторизоваться" в настройках.');
                 return;
             }
             try {
-                const user = window.Telegram.WebApp.initDataUnsafe.user;
+                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
+                if (!ping.ok) throw new Error('Бэкенд недоступен');
+
                 const userId = Number(user.id);
                 document.getElementById('profile-username').textContent = user.username ? `@${user.username}` : user.first_name;
                 if (user.photo_url) {
                     document.getElementById('profile-photo').src = user.photo_url;
                 }
-                // Показать кнопку модерации, если пользователь - модератор
                 if (MODERATOR_IDS.includes(userId)) {
                     document.getElementById('moderation-button').style.display = 'block';
                     await loadPendingMemes();
@@ -709,27 +751,27 @@
                 const response = await fetch(`${SERVER_URL}/get_description`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Telegram-InitData': window.Telegram.WebApp.initData,
-                        'X-Telegram-User': JSON.stringify(user)
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_init_data: window.Telegram.WebApp.initData,
+                        telegram_user: JSON.stringify(user)
+                    })
                 });
                 const data = await response.json();
                 document.getElementById('profile-description').value = data.description || '';
             } catch (error) {
                 console.error('Ошибка инициализации профиля:', error);
                 document.getElementById('profile-description').value = 'Ошибка загрузки описания';
+                alert('Ошибка загрузки описания! Проверьте консоль или убедитесь, что бэкенд работает.');
             }
         }
 
-        // Автоматическая попытка авторизации при загрузке страницы
         window.addEventListener('load', () => {
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.ready();
-                Telegram.WebApp.expand();
                 console.log('Telegram Web App инициализирован:', window.Telegram.WebApp.initDataUnsafe);
-                initProfile();
-                loadMemes();
+                setTimeout(initializeApp, 1000);
             } else {
                 console.error('Telegram Web App не доступен');
                 alert('Ошибка: приложение должно быть открыто в Telegram!');
