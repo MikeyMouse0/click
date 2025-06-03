@@ -13,7 +13,7 @@
             background: linear-gradient(180deg, #000000, #1a1a1a);
             color: #ffffff;
             overflow-x: hidden;
-            user-select: none;
+            /* Убрано user-select: none для корректного ввода */
         }
         body.light {
             background: linear-gradient(180deg, #e0e0e0, #ffffff);
@@ -225,6 +225,11 @@
             color: #ffffff;
             font-size: 14px;
             transition: background 0.3s ease;
+            /* Убедимся, что поля редактируемы */
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
         .light .upload-section input, .light .upload-section textarea, .light .profile-section textarea, .light .settings-section button, .light .search-section input {
             background: rgba(0, 0, 0, 0.15);
@@ -430,6 +435,13 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     try {
+                        console.log('Отправка запроса на /upload_meme с данными:', {
+                            title: titleInput.value,
+                            description: descriptionInput.value,
+                            tag: tagInput.value,
+                            nsfw: nsfwInput.checked,
+                            image_data: e.target.result.substring(0, 50) + '...'
+                        });
                         const response = await fetch(`${SERVER_URL}/upload_meme`, {
                             method: 'POST',
                             headers: {
@@ -455,11 +467,12 @@
                             fileInput.value = '';
                             await loadMemes();
                         } else {
-                            alert('Ошибка при загрузке мема!');
+                            const error = await response.json();
+                            alert(`Ошибка при загрузке мема: ${error.error || 'Неизвестная ошибка'}`);
                         }
                     } catch (error) {
-                        console.error('Ошибка загрузки:', error);
-                        alert('Ошибка сети, попробуй позже!');
+                        console.error('Ошибка сети или сервера:', error);
+                        alert('Ошибка сети, попробуй позже! Проверь консоль для деталей.');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -653,6 +666,7 @@
                 return;
             }
             try {
+                console.log('Отправка запроса на /update_description с данными:', { description });
                 const response = await fetch(`${SERVER_URL}/update_description`, {
                     method: 'POST',
                     headers: {
@@ -665,11 +679,12 @@
                 if (response.ok) {
                     alert('Описание сохранено, бро!');
                 } else {
-                    alert('Ошибка при сохранении описания!');
+                    const error = await response.json();
+                    alert(`Ошибка при сохранении описания: ${error.error || 'Неизвестная ошибка'}`);
                 }
             } catch (error) {
-                console.error('Ошибка сохранения профиля:', error);
-                alert('Ошибка сети, попробуй позже!');
+                console.error('Ошибка сети или сервера:', error);
+                alert('Ошибка сети, попробуй позже! Проверь консоль для деталей.');
             }
         }
 
