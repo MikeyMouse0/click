@@ -1,782 +1,476 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeLand</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(180deg, #000000, #1a1a1a);
-            color: #ffffff;
-            overflow-x: hidden;
-        }
-        body.light {
-            background: linear-gradient(180deg, #e0e0e0, #ffffff);
-            color: #000000;
-        }
-        .container {
-            max-width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .header {
-            padding: 12px;
-            text-align: center;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .header.light {
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), transparent);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-        .header.light h1 {
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .meme-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-            border-radius: 12px;
-            padding: 16px;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 100%;
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
-        .light .meme-card {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.05));
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        .meme-card:hover {
-            transform: scale(1.03);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-        }
-        .meme-card img {
-            width: 100%;
-            max-height: 400px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: filter 0.5s ease;
-        }
-        .meme-card img.nsfw {
-            filter: blur(20px);
-            cursor: pointer;
-        }
-        .meme-card img.nsfw.revealed {
-            filter: blur(0);
-        }
-        .light .meme-card img {
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        .meme-card h3 {
-            margin: 0 0 8px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .meme-card p {
-            margin: 0 0 4px;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        .meme-card .tag {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin: 4px 0 0;
-        }
-        .light .meme-card .tag {
-            color: rgba(0, 0, 0, 0.7);
-        }
-        .meme-card .nsfw-warning {
-            font-size: 12px;
-            color: #ff4d4d;
-            margin: 4px 0 0;
-            text-align: center;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-around;
-            padding: 12px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 10;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
-        }
-        .navbar.hidden {
-            transform: translateY(100%);
-        }
-        .light .navbar {
-            background: linear-gradient(to top, rgba(255, 255, 255, 0.5), transparent);
-            border-top: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        .nav-button {
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 12px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .light .nav-button {
-            color: #000000;
-        }
-        .nav-button:hover, .nav-button.active {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-            transform: translateY(-2px);
-        }
-        .light .nav-button:hover, .light .nav-button.active {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1));
-        }
-        .nav-button i {
-            font-size: 20px;
-            transition: transform 0.3s ease;
-        }
-        .nav-button:hover i {
-            transform: scale(1.2);
-        }
-        .toggle-nav {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 11;
-            transition: all 0.3s ease;
-        }
-        .light .toggle-nav {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
-        }
-        .toggle-nav:hover {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3));
-            transform: scale(1.1);
-        }
-        .light .toggle-nav:hover {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
-        }
-        .toggle-nav i {
-            font-size: 20px;
-            color: #ffffff;
-        }
-        .light .toggle-nav i {
-            color: #000000;
-        }
-        .upload-section, .settings-section, .profile-section, .search-section, .moderation-section {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            padding: 16px 16px 80px 16px;
-        }
-        .upload-section input, .upload-section textarea, .profile-section textarea, .settings-section button, .search-section input {
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            font-size: 14px;
-            transition: background 0.3s ease;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-        .light .upload-section input, .light .upload-section textarea, .light .profile-section textarea, .light .settings-section button, .light .search-section input {
-            background: rgba(0, 0, 0, 0.15);
-            color: #000000;
-        }
-        .upload-section input:hover, .upload-section textarea:hover, .profile-section textarea:hover, .settings-section button:hover, .search-section input:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-        .light .upload-section input:hover, .light .upload-section textarea:hover, .light .profile-section textarea:hover, .light .settings-section button:hover, .light .search-section input:hover {
-            background: rgba(0, 0, 0, 0.25);
-        }
-        .upload-section .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        .upload-section input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #ff4d4d;
-        }
-        .upload-section button, .profile-section button, .settings-section button, .moderation-section button {
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-        .light .upload-section button, .light .profile-section button, .light .settings-section button, .light .moderation-section button {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
-            color: #000000;
-        }
-        .upload-section button:hover, .profile-section button:hover, .settings-section button:hover, .moderation-section button:hover {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.3));
-            transform: translateY(-2px);
-        }
-        .light .upload-section button:hover, .light .profile-section button:hover, .light .settings-section button:hover, .light .moderation-section button:hover {
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3));
-        }
-        .profile-section img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .light .profile-section img {
-            border: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        .profile-section h3 {
-            margin: 8px 0;
-            font-size: 16px;
-            text-align: center;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .fade-in {
-            animation: pulse 0.5s ease forwards;
-        }
-        @keyframes slide {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(100%); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WikiSearch — Поиск статей</title>
+  <script src="https://cdn.tailwindcss.com "></script>
+  <!-- Библиотека для генерации PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js "></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Модальное окно */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      z-index: 50;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 900px;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #777;
+    }
+
+    .back-btn, .download-btn {
+      margin-bottom: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn {
+      color: #0073e6;
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .download-btn {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+
+    .download-btn:hover {
+      background-color: #059669;
+    }
+
+    .settings-icon {
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .settings-icon:hover {
+      transform: rotate(90deg);
+    }
+
+    /* Панель настроек */
+    .settings-panel {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 60;
+      display: none;
+      min-width: 200px;
+    }
+
+    .settings-panel label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* iframe для отображения "как на Вики" */
+    .wiki-frame {
+      width: 100%;
+      height: 600px;
+      border: none;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    /* Карточка статьи */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      max-height: 200px;
+    }
+
+    .card-body {
+      padding: 15px;
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #0073e6;
+      margin-bottom: 10px;
+    }
+
+    .card-excerpt {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    /* Приветствие */
+    .hero {
+      text-align: center;
+      padding: 20px 0;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .hero h2 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #1a202c;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #4a5568;
+      margin: 10px 0 20px;
+    }
+
+    .search-example {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      font-style: italic;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🔥 MemeLand 🔥</h1>
+<body class="bg-gray-100 text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-10">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600">WikiSearch</h1>
+
+      <form id="search-form" class="relative w-full max-w-lg mx-4">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Поиск статей..." 
+          class="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </form>
+
+      <!-- Кнопка настроек -->
+      <div class="relative">
+        <svg onclick="toggleSettings()" class="settings-icon w-6 h-6 text-gray-600 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+
+        <!-- Панель настроек -->
+        <div id="settings-panel" class="settings-panel">
+          <label>
+            <input type="radio" name="viewMode" value="default" checked onchange="changeViewMode(this.value)"> Обычный вид
+          </label>
+          <label>
+            <input type="radio" name="viewMode" value="wiki" onchange="changeViewMode(this.value)"> Как на Вики
+          </label>
         </div>
-        <div class="content" id="content">
-            <!-- Мемы будут добавляться сюда -->
-        </div>
-        <div class="upload-section" id="upload-section">
-            <input type="text" id="meme-title" placeholder="Название мема">
-            <textarea id="meme-description" placeholder="Описание мема" rows="4"></textarea>
-            <input type="text" id="meme-tag" placeholder="Тег (например, #юмор)">
-            <div class="checkbox-container">
-                <input type="checkbox" id="meme-nsfw">
-                <label for="meme-nsfw">18+</label>
-            </div>
-            <input type="file" accept="image/*" id="meme-upload">
-            <button onclick="uploadMeme()">Залить мемас!</button>
-        </div>
-        <div class="settings-section" id="settings-section">
-            <button onclick="forceAuth()">Авторизоваться</button>
-            <button onclick="toggleTheme()">Переключить на <span id="theme-text">светлый вайб</span></button>
-            <button onclick="showSection('profile-section')">Профиль</button>
-        </div>
-        <div class="profile-section" id="profile-section">
-            <img id="profile-photo" src="https://via.placeholder.com/80" alt="Profile Photo">
-            <h3 id="profile-username">Загрузка...</h3>
-            <textarea id="profile-description" placeholder="О себе" rows="4"></textarea>
-            <button onclick="saveProfileDescription()">Сохранить описание</button>
-        </div>
-        <div class="search-section" id="search-section">
-            <input type="text" id="search-username" placeholder="Введите ник (@username)">
-            <button onclick="searchByUsername()">Найти мемы</button>
-        </div>
-        <div class="moderation-section" id="moderation-section">
-            <div id="pending-memes">
-                <!-- Мемы на модерацию будут добавляться сюда -->
-            </div>
-        </div>
-        <div class="navbar" id="navbar">
-            <button class="nav-button active" onclick="showSection('content')">
-                <i class="fas fa-laugh-squint"></i>
-                Мемы
-            </button>
-            <button class="nav-button" onclick="showSection('upload-section')">
-                <i class="fas fa-upload"></i>
-                Свой мем
-            </button>
-            <button class="nav-button" onclick="showSection('search-section')">
-                <i class="fas fa-search"></i>
-                Поиск
-            </button>
-            <button class="nav-button" id="moderation-button" style="display: none;" onclick="showSection('moderation-section')">
-                <i class="fas fa-shield-alt"></i>
-                Модерация
-            </button>
-            <button class="nav-button" onclick="showSection('settings-section')">
-                <i class="fas fa-cog"></i>
-                Настройки
-            </button>
-        </div>
-        <button class="toggle-nav" onclick="toggleNavbar()">
-            <i id="toggle-icon" class="fas fa-chevron-up"></i>
-        </button>
+      </div>
     </div>
-    <script>
-        let currentTheme = 'dark';
-        let isNavbarHidden = false;
-        const MODERATOR_IDS = [123456789, 987654321]; // Список ID модераторов
+  </header>
 
-        // Укажите здесь ссылку на ваш бэкенд
-        // Для локального тестирования используйте: 'http://127.0.0.1:5000'
-        // Для продакшена замените на ваш развернутый бэкенд, например: 'https://your-backend-domain.com'
-        const SERVER_URL = 'http://127.0.0.1:5000'; // Замените на URL вашего бэкенда
+  <!-- Hero Section -->
+  <section class="hero">
+    <h2>Добро пожаловать в WikiSearch!</h2>
+    <p>Ищите и читайте статьи из русской Википедии прямо здесь.</p>
+    <div class="search-example">например: Москва, Эйнштейн, Природа</div>
+  </section>
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.content, .upload-section, .settings-section, .profile-section, .search-section, .moderation-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(sectionId).style.display = 'flex';
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[onclick="showSection('${sectionId}')"]`).classList.add('active');
+  <!-- Main -->
+  <main class="container mx-auto px-4 py-8 fade-in">
+    <section id="results-section">
+      <h2 class="text-xl font-semibold mb-4">Результаты поиска:</h2>
+      <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Результаты будут добавлены сюда динамически -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal окно для просмотра статьи -->
+  <div id="article-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <button class="back-btn hidden" onclick="goBack()">← Назад</button>
+      <h2 id="modal-title" class="text-2xl font-bold mb-2"></h2>
+      <img id="modal-image" class="thumbnail" src="" alt="Изображение статьи" />
+      <div id="modal-extract" class="mt-2 text-gray-700"></div>
+      <iframe id="wiki-iframe" class="wiki-frame hidden"></iframe>
+      <button id="download-pdf-btn" class="download-btn mt-4 hidden">Скачать PDF</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const resultsContainer = document.getElementById('results');
+    const modal = document.getElementById('article-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalImage = document.getElementById('modal-image');
+    const modalExtract = document.getElementById('modal-extract');
+    const wikiIframe = document.getElementById('wiki-iframe');
+    const backBtn = document.querySelector('.back-btn');
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
+    let currentViewMode = 'default';
+    let currentArticleUrl = '';
+    let historyStack = [];
+    let historyIndex = -1;
+
+    function toggleSettings() {
+      const panel = document.getElementById('settings-panel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function changeViewMode(mode) {
+      currentViewMode = mode;
+
+      if (mode === 'wiki') {
+        modalExtract.classList.add('hidden');
+        wikiIframe.classList.remove('hidden');
+        modalImage.classList.add('hidden');
+        downloadPdfBtn.classList.add('hidden'); // Нельзя скачать iframe
+        wikiIframe.src = currentArticleUrl;
+      } else {
+        wikiIframe.classList.add('hidden');
+        modalExtract.classList.remove('hidden');
+        modalImage.classList.remove('hidden');
+        downloadPdfBtn.classList.remove('hidden');
+      }
+    }
+
+    function openArticle(title) {
+      const encodedTitle = encodeURIComponent(title).replace(/ /g, '_');
+      const url = `https://ru.wikipedia.org/wiki/ ${encodedTitle}`;
+      currentArticleUrl = url;
+
+      // Обновление истории
+      if (historyIndex < historyStack.length - 1) {
+        historyStack = historyStack.slice(0, historyIndex + 1);
+      }
+
+      historyStack.push({ title, url });
+      historyIndex++;
+
+      updateNavigationButtons();
+
+      if (currentViewMode === 'wiki') {
+        modalTitle.textContent = title;
+        modalExtract.classList.add('hidden');
+        wikiIframe.classList.remove('hidden');
+        modalImage.classList.add('hidden');
+        wikiIframe.src = url;
+      } else {
+        loadDefaultView(title, encodedTitle);
+      }
+
+      modal.classList.add('active');
+    }
+
+    async function loadDefaultView(title, encodedTitle) {
+      try {
+        const apiUrl = `https://ru.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&pithumbsize=400&titles=${encodedTitle}&exintro=1&explaintext=1&format=json&origin=*`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const pageId = Object.keys(data.query.pages)[0];
+        const page = data.query.pages[pageId];
+
+        modalTitle.textContent = page.title;
+        modalExtract.innerHTML = `<p>${page.extract || 'Нет доступного текста.'}</p>`;
+        modalExtract.classList.remove('hidden');
+        wikiIframe.classList.add('hidden');
+
+        if (page.thumbnail && page.thumbnail.source) {
+          modalImage.src = page.thumbnail.source;
+          modalImage.classList.remove('hidden');
+        } else {
+          modalImage.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки статьи:", error);
+        modalExtract.innerHTML = '<p>Не удалось загрузить статью.</p>';
+      }
+    }
+
+    function goBack() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        const article = historyStack[historyIndex];
+        const encodedTitle = encodeURIComponent(article.title).replace(/ /g, '_');
+
+        currentArticleUrl = article.url;
+
+        if (currentViewMode === 'wiki') {
+          modalTitle.textContent = article.title;
+          wikiIframe.src = article.url;
+        } else {
+          loadDefaultView(article.title, encodedTitle);
         }
 
-        function toggleNavbar() {
-            const navbar = document.getElementById('navbar');
-            const toggleIcon = document.getElementById('toggle-icon');
-            isNavbarHidden = !isNavbarHidden;
-            if (isNavbarHidden) {
-                navbar.classList.add('hidden');
-                toggleIcon.classList.remove('fa-chevron-up');
-                toggleIcon.classList.add('fa-chevron-down');
-            } else {
-                navbar.classList.remove('hidden');
-                toggleIcon.classList.remove('fa-chevron-down');
-                toggleIcon.classList.add('fa-chevron-up');
-            }
-        }
+        updateNavigationButtons();
+      }
+    }
 
-        function forceAuth() {
-            if (window.Telegram?.WebApp) {
-                Telegram.WebApp.ready();
-                console.log('Telegram Web App инициализирован:', window.Telegram.WebApp.initDataUnsafe);
-                initializeApp();
-            } else {
-                console.error('Telegram Web App не доступен');
-                alert('Ошибка: приложение должно быть открыто в Telegram!');
-            }
-        }
+    function updateNavigationButtons() {
+      backBtn.classList.toggle('hidden', historyIndex <= 0);
+    }
 
-        async function initializeApp() {
-            await initProfile();
-            await loadMemes();
-        }
+    function closeModal() {
+      modal.classList.remove('active');
+    }
 
-        async function uploadMeme() {
-            const fileInput = document.getElementById('meme-upload');
-            const titleInput = document.getElementById('meme-title');
-            const descriptionInput = document.getElementById('meme-description');
-            const tagInput = document.getElementById('meme-tag');
-            const nsfwInput = document.getElementById('meme-nsfw');
-            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    // Поиск статей
+    async function searchArticles(query) {
+      const url = ` https://ru.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
 
-            if (!user) {
-                alert('Ошибка: пользователь не авторизован! Попробуйте нажать "Авторизоваться" в настройках.');
-                return;
-            }
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const results = data.query.search;
 
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
-                        if (!ping.ok) throw new Error('Бэкенд недоступен');
+        displayResults(results);
+      } catch (error) {
+        console.error("Ошибка при поиске:", error);
+        resultsContainer.innerHTML = "<p>Не удалось загрузить результаты.</p>";
+      }
+    }
 
-                        console.log('Отправка запроса на /upload_meme с данными:', {
-                            title: titleInput.value,
-                            description: descriptionInput.value,
-                            tag: tagInput.value,
-                            nsfw: nsfwInput.checked,
-                            image_data: e.target.result.substring(0, 50) + '...'
-                        });
-                        const response = await fetch(`${SERVER_URL}/upload_meme`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                title: titleInput.value,
-                                description: descriptionInput.value,
-                                tag: tagInput.value,
-                                nsfw: nsfwInput.checked,
-                                image_data: e.target.result,
-                                telegram_init_data: window.Telegram.WebApp.initData,
-                                telegram_user: JSON.stringify(user)
-                            })
-                        });
-                        if (response.ok) {
-                            alert('Мем отправлен на модерацию, бро!');
-                            showSection('content');
-                            titleInput.value = '';
-                            descriptionInput.value = '';
-                            tagInput.value = '';
-                            nsfwInput.checked = false;
-                            fileInput.value = '';
-                            await loadMemes();
-                        } else {
-                            const error = await response.json();
-                            alert(`Ошибка при загрузке мема: ${error.error || 'Неизвестная ошибка'}`);
-                        }
-                    } catch (error) {
-                        console.error('Ошибка загрузки мема:', error);
-                        alert('Ошибка загрузки мема! Проверьте консоль или убедитесь, что бэкенд работает.');
-                    }
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert('Выбери картинку, бро!');
-            }
-        }
+    // Отображение результатов
+    function displayResults(results) {
+      resultsContainer.innerHTML = '';
 
-        async function loadMemes() {
-            try {
-                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
-                if (!ping.ok) throw new Error('Бэкенд недоступен');
+      if (results.length === 0) {
+        resultsContainer.innerHTML = "<p>Ничего не найдено.</p>";
+        return;
+      }
 
-                const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
-                if (!user) throw new Error('Пользователь не авторизован');
+      results.forEach(result => {
+        const title = result.title;
+        const snippet = result.snippet.replace(/<\/?span[^>]*>/g, '');
 
-                console.log('Отправка запроса на /get_memes с данными:', {
-                    telegram_init_data: window.Telegram.WebApp.initData.substring(0, 50) + '...',
-                    telegram_user: JSON.stringify(user)
-                });
-                const response = await fetch(`${SERVER_URL}/get_memes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegram_init_data: window.Telegram.WebApp.initData,
-                        telegram_user: JSON.stringify(user)
-                    })
-                });
-                if (!response.ok) {
-                    throw new Error(`Сбой запроса: ${response.status} ${response.statusText}`);
-                }
-                const memes = await response.json();
-                console.log('Полученные мемы:', memes);
-                const content = document.getElementById('content');
-                content.innerHTML = '';
-                if (!Array.isArray(memes) || memes.length === 0) {
-                    content.innerHTML = '<h3>Мемы не найдены!</h3>';
-                } else {
-                    memes.forEach(meme => {
-                        const memeCard = document.createElement('div');
-                        memeCard.className = 'meme-card fade-in';
-                        const imgClass = meme.nsfw ? 'nsfw' : '';
-                        memeCard.innerHTML = `
-                            <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
-                            ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
-                            <h3>${meme.title || 'Без названия'}</h3>
-                            <p>${meme.description || 'Без описания'}</p>
-                            <p class="tag">${meme.tag || '#безтега'}</p>
-                        `;
-                        if (meme.nsfw) {
-                            memeCard.querySelector('img').onclick = function() {
-                                if (confirm('Это контент 18+. Показать?')) {
-                                    this.classList.add('revealed');
-                                }
-                            };
-                        }
-                        content.appendChild(memeCard);
-                    });
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки мемов:', error);
-                alert('Ошибка загрузки мемов! Проверьте консоль или убедитесь, что бэкенд работает.');
-            }
-        }
+        const card = document.createElement('div');
+        card.className = "card";
+        card.innerHTML = `
+          <img src=" https://ru.wikipedia.org/wiki/Special :Random/File" class="thumbnail" onError="this.style.display='none'" />
+          <div class="card-body">
+            <h3 class="card-title">${title}</h3>
+            <p class="card-excerpt">${snippet}...</p>
+          </div>
+        `;
+        card.addEventListener('click', () => openArticle(title));
+        resultsContainer.appendChild(card);
+      });
+    }
 
-        async function loadPendingMemes() {
-            try {
-                const response = await fetch(`${SERVER_URL}/get_pending_memes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegram_init_data: window.Telegram.WebApp.initData,
-                        telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                    })
-                });
-                if (response.status === 403) {
-                    alert('Доступ запрещён: вы не модератор!');
-                    return;
-                }
-                const memes = await response.json();
-                const pendingMemes = document.getElementById('pending-memes');
-                pendingMemes.innerHTML = '';
-                memes.forEach(meme => {
-                    const memeCard = document.createElement('div');
-                    memeCard.className = 'meme-card fade-in';
-                    memeCard.innerHTML = `
-                        <img src="${meme.image_data}" alt="Pending Meme">
-                        <h3>${meme.title || 'Без названия'}</h3>
-                        <p>${meme.description || 'Без описания'}</p>
-                        <p class="tag">${meme.tag || '#безтега'}</p>
-                        ${meme.nsfw ? '<p class="nsfw-warning">18+</p>' : ''}
-                    `;
-                    const approveButton = document.createElement('button');
-                    approveButton.textContent = 'Одобрить';
-                    approveButton.onclick = async () => {
-                        try {
-                            await fetch(`${SERVER_URL}/update_meme_status`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    meme_id: meme.id,
-                                    status: 'approved',
-                                    telegram_init_data: window.Telegram.WebApp.initData,
-                                    telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                                })
-                            });
-                            alert('Мем одобрен!');
-                            await loadPendingMemes();
-                            await loadMemes();
-                        } catch (error) {
-                            console.error('Ошибка одобрения:', error);
-                            alert('Ошибка при одобрении мема!');
-                        }
-                    };
-                    const rejectButton = document.createElement('button');
-                    rejectButton.textContent = 'Отклонить';
-                    rejectButton.onclick = async () => {
-                        try {
-                            await fetch(`${SERVER_URL}/update_meme_status`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    meme_id: meme.id,
-                                    status: 'rejected',
-                                    telegram_init_data: window.Telegram.WebApp.initData,
-                                    telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                                })
-                            });
-                            alert('Мем отклонён!');
-                            await loadPendingMemes();
-                        } catch (error) {
-                            console.error('Ошибка отклонения:', error);
-                            alert('Ошибка при отклонении мема!');
-                        }
-                    };
-                    memeCard.appendChild(approveButton);
-                    memeCard.appendChild(rejectButton);
-                    pendingMemes.appendChild(memeCard);
-                });
-            } catch (error) {
-                console.error('Ошибка загрузки мемов на модерацию:', error);
-                alert('Ошибка загрузки мемов на модерацию!');
-            }
-        }
+    // Скачивание PDF
+    function downloadPDF() {
+      const element = document.createElement('div');
+      element.innerHTML = `
+        <h1 style="font-size: 24px; margin-bottom: 10px;">${modalTitle.textContent}</h1>
+        ${modalImage.src ? `<img src="${modalImage.src}" style="max-width: 100%; margin-bottom: 10px;">` : ''}
+        <div>${modalExtract.innerHTML}</div>
+      `;
 
-        async function searchByUsername() {
-            const usernameInput = document.getElementById('search-username');
-            const username = usernameInput.value.trim();
-            if (!username) {
-                alert('Введите никнейм!');
-                return;
-            }
-            try {
-                const response = await fetch(`${SERVER_URL}/search_by_username`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        telegram_init_data: window.Telegram.WebApp.initData,
-                        telegram_user: JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user)
-                    })
-                });
-                const memes = await response.json();
-                const content = document.getElementById('content');
-                content.innerHTML = '';
-                if (memes.length === 0) {
-                    content.innerHTML = '<h3>Мемы не найдены!</h3>';
-                    showSection('content');
-                    return;
-                }
-                memes.forEach(meme => {
-                    const memeCard = document.createElement('div');
-                    memeCard.className = 'meme-card fade-in';
-                    const imgClass = meme.nsfw ? 'nsfw' : '';
-                    memeCard.innerHTML = `
-                        <img src="${meme.image_data}" alt="Meme" class="${imgClass}">
-                        ${meme.nsfw ? '<p class="nsfw-warning">18+: Нажми, чтобы показать</p>' : ''}
-                        <h3>${meme.title || 'Без названия'}</h3>
-                        <p>${meme.description || 'Без описания'}</p>
-                        <p class="tag">${meme.tag || '#безтега'}</p>
-                    `;
-                    if (meme.nsfw) {
-                        memeCard.querySelector('img').onclick = function() {
-                            if (confirm('Это контент 18+. Показать?')) {
-                                this.classList.add('revealed');
-                            }
-                        };
-                    }
-                    content.appendChild(memeCard);
-                });
-                showSection('content');
-                usernameInput.value = '';
-            } catch (error) {
-                console.error('Ошибка поиска:', error);
-                alert('Ошибка поиска мемов!');
-            }
-        }
+      const opt = {
+        margin:       0.5,
+        filename:     `${modalTitle.textContent}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
 
-        function toggleTheme() {
-            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.body.className = currentTheme;
-            document.querySelector('.header').className = `header ${currentTheme}`;
-            document.getElementById('theme-text').textContent = currentTheme === 'dark' ? 'светлый вайб' : 'темная тема';
-        }
+      html2pdf().set(opt).from(element).save();
+    }
 
-        async function saveProfileDescription() {
-            const description = document.getElementById('profile-description').value;
-            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
-            if (!user) {
-                alert('Ошибка: пользователь не авторизован! Попробуйте нажать "Авторизоваться" в настройках.');
-                return;
-            }
-            try {
-                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
-                if (!ping.ok) throw new Error('Бэкенд недоступен');
+    // Обработка формы поиска
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = searchInput.value.trim();
+      if (query) {
+        searchArticles(query);
+      }
+    });
 
-                console.log('Отправка запроса на /update_description с данными:', { description });
-                const response = await fetch(`${SERVER_URL}/update_description`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        description: description,
-                        telegram_init_data: window.Telegram.WebApp.initData,
-                        telegram_user: JSON.stringify(user)
-                    })
-                });
-                if (response.ok) {
-                    alert('Описание сохранено, бро!');
-                } else {
-                    const error = await response.json();
-                    alert(`Ошибка при сохранении описания: ${error.error || 'Неизвестная ошибка'}`);
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки описания:', error);
-                alert('Ошибка загрузки описания! Проверьте консоль или убедитесь, что бэкенд работает.');
-            }
-        }
+    // Автопоиск при вводе
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      if (query.length > 2) {
+        searchArticles(query);
+      }
+    });
 
-        async function initProfile() {
-            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
-            if (!user) {
-                console.warn('Данные пользователя Telegram Web App недоступны');
-                alert('Ошибка: пользователь не авторизован! Откройте приложение через Telegram или нажмите "Авторизоваться" в настройках.');
-                return;
-            }
-            try {
-                const ping = await fetch(`${SERVER_URL}/`, { method: 'HEAD' });
-                if (!ping.ok) throw new Error('Бэкенд недоступен');
-
-                const userId = Number(user.id);
-                document.getElementById('profile-username').textContent = user.username ? `@${user.username}` : user.first_name;
-                if (user.photo_url) {
-                    document.getElementById('profile-photo').src = user.photo_url;
-                }
-                if (MODERATOR_IDS.includes(userId)) {
-                    document.getElementById('moderation-button').style.display = 'block';
-                    await loadPendingMemes();
-                }
-                const response = await fetch(`${SERVER_URL}/get_description`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegram_init_data: window.Telegram.WebApp.initData,
-                        telegram_user: JSON.stringify(user)
-                    })
-                });
-                const data = await response.json();
-                document.getElementById('profile-description').value = data.description || '';
-            } catch (error) {
-                console.error('Ошибка инициализации профиля:', error);
-                document.getElementById('profile-description').value = 'Ошибка загрузки описания';
-                alert('Ошибка загрузки описания! Проверьте консоль или убедитесь, что бэкенд работает.');
-            }
-        }
-
-        window.addEventListener('load', () => {
-            if (window.Telegram?.WebApp) {
-                Telegram.WebApp.ready();
-                console.log('Telegram Web App инициализирован:', window.Telegram.WebApp.initDataUnsafe);
-                setTimeout(initializeApp, 1000);
-            } else {
-                console.error('Telegram Web App не доступен');
-                alert('Ошибка: приложение должно быть открыто в Telegram!');
-            }
-        });
-    </script>
+    // Закрытие модального окна по клику вне контента
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+  </script>
 </body>
-</html>
+    </html>
