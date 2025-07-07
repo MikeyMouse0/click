@@ -6,6 +6,7 @@
   <title>WikiSearch — Поиск статей</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --primary-color: #3b82f6;
@@ -17,6 +18,7 @@
       --modal-bg: #ffffff;
     }
 
+    /* Основные темы */
     .dark {
       --primary-color: #60a5fa;
       --bg-color: #111827;
@@ -45,6 +47,57 @@
       --header-bg: #a5f3fc;
       --input-bg: #cffafe;
       --modal-bg: #cffafe;
+    }
+
+    /* Дополнительные темы */
+    .sunset {
+      --primary-color: #f97316;
+      --bg-color: #fff7ed;
+      --text-color: #431407;
+      --card-bg: #fed7aa;
+      --header-bg: #fdba74;
+      --input-bg: #fed7aa;
+      --modal-bg: #fed7aa;
+    }
+
+    .midnight {
+      --primary-color: #7e22ce;
+      --bg-color: #f3e8ff;
+      --text-color: #3b0764;
+      --card-bg: #e9d5ff;
+      --header-bg: #d8b4fe;
+      --input-bg: #e9d5ff;
+      --modal-bg: #e9d5ff;
+    }
+
+    .forest {
+      --primary-color: #166534;
+      --bg-color: #f0fdf4;
+      --text-color: #052e16;
+      --card-bg: #bbf7d0;
+      --header-bg: #86efac;
+      --input-bg: #bbf7d0;
+      --modal-bg: #bbf7d0;
+    }
+
+    .berry {
+      --primary-color: #be185d;
+      --bg-color: #fdf2f8;
+      --text-color: #831843;
+      --card-bg: #fbcfe8;
+      --header-bg: #f9a8d4;
+      --input-bg: #fbcfe8;
+      --modal-bg: #fbcfe8;
+    }
+
+    .coffee {
+      --primary-color: #854d0e;
+      --bg-color: #fef3c7;
+      --text-color: #422006;
+      --card-bg: #fde68a;
+      --header-bg: #fcd34d;
+      --input-bg: #fde68a;
+      --modal-bg: #fde68a;
     }
 
     body {
@@ -152,6 +205,8 @@
       z-index: 60;
       display: none;
       min-width: 250px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .settings-panel label {
@@ -325,6 +380,8 @@
       align-items: center;
       border-radius: 6px;
       margin-bottom: 5px;
+      width: 100%;
+      text-align: left;
     }
 
     .theme-option:hover {
@@ -334,6 +391,48 @@
     .theme-option.active {
       background-color: var(--primary-color);
       color: white;
+    }
+
+    .theme-options-container {
+      margin-bottom: 15px;
+    }
+
+    .theme-options-row {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    .theme-options-row .theme-option {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+    }
+
+    /* Стили для раздела "О нас" */
+    .about-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 30px;
+    }
+
+    .about-section h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+
+    .about-section p {
+      margin-bottom: 15px;
+      line-height: 1.6;
     }
 
     /* Мобильные стили */
@@ -387,6 +486,14 @@
         left: 10px;
         max-width: calc(100% - 20px);
       }
+      
+      .theme-options-row {
+        flex-direction: column;
+      }
+      
+      .theme-options-row .theme-option {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -395,7 +502,9 @@
   <!-- Header -->
   <header class="shadow-md sticky top-0 z-10" style="background-color: var(--header-bg);">
     <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-      <h1 class="text-2xl font-bold mb-2 md:mb-0" style="color: var(--primary-color);">WikiSearch</h1>
+      <h1 class="text-2xl font-bold mb-2 md:mb-0 flex items-center" style="color: var(--primary-color);">
+        <i class="fas fa-search mr-2"></i> WikiSearch
+      </h1>
 
       <form id="search-form" class="relative w-full max-w-lg mx-0 md:mx-4">
         <input 
@@ -405,9 +514,7 @@
           class="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2"
           style="background-color: var(--input-bg); color: var(--text-color); border-color: var(--primary-color);"
         />
-        <svg class="absolute left-3 top-3.5 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--primary-color);">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+        <i class="fas fa-search absolute left-3 top-3.5" style="color: var(--primary-color);"></i>
       </form>
 
       <div class="flex items-center mt-2 md:mt-0">
@@ -446,10 +553,7 @@
 
         <!-- Кнопка настроек -->
         <div class="relative ml-2">
-          <svg onclick="toggleSettings()" class="settings-icon w-6 h-6 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--primary-color);">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
+          <i onclick="toggleSettings()" class="settings-icon fas fa-cog text-xl cursor-pointer" style="color: var(--primary-color);"></i>
 
           <!-- Панель настроек -->
           <div id="settings-panel" class="settings-panel">
@@ -466,19 +570,32 @@
             </label>
             
             <h3 id="window-size-title">Размер окна статьи</h3>
-            <div>
+            <div class="theme-options-row">
               <button onclick="changeWindowSize('small')" class="theme-option" id="size-small">Маленький</button>
               <button onclick="changeWindowSize('medium')" class="theme-option active" id="size-medium">Средний</button>
+            </div>
+            <div class="theme-options-row">
               <button onclick="changeWindowSize('large')" class="theme-option" id="size-large">Большой</button>
               <button onclick="changeWindowSize('full')" class="theme-option" id="size-full">На весь экран</button>
             </div>
             
             <h3 id="theme-title">Тема оформления</h3>
-            <div>
-              <button onclick="changeTheme('light')" class="theme-option active" id="theme-light">Светлая</button>
-              <button onclick="changeTheme('dark')" class="theme-option" id="theme-dark">Тёмная</button>
-              <button onclick="changeTheme('nature')" class="theme-option" id="theme-nature">Природа</button>
-              <button onclick="changeTheme('ocean')" class="theme-option" id="theme-ocean">Океан</button>
+            <div class="theme-options-container">
+              <div class="theme-options-row">
+                <button onclick="changeTheme('light')" class="theme-option active" id="theme-light">Светлая</button>
+                <button onclick="changeTheme('dark')" class="theme-option" id="theme-dark">Тёмная</button>
+                <button onclick="changeTheme('nature')" class="theme-option" id="theme-nature">Природа</button>
+              </div>
+              <div class="theme-options-row">
+                <button onclick="changeTheme('ocean')" class="theme-option" id="theme-ocean">Океан</button>
+                <button onclick="changeTheme('sunset')" class="theme-option" id="theme-sunset">Закат</button>
+                <button onclick="changeTheme('midnight')" class="theme-option" id="theme-midnight">Полночь</button>
+              </div>
+              <div class="theme-options-row">
+                <button onclick="changeTheme('forest')" class="theme-option" id="theme-forest">Лес</button>
+                <button onclick="changeTheme('berry')" class="theme-option" id="theme-berry">Ягода</button>
+                <button onclick="changeTheme('coffee')" class="theme-option" id="theme-coffee">Кофе</button>
+              </div>
             </div>
             
             <h3 id="search-language-title">Язык поиска</h3>
@@ -513,6 +630,21 @@
         <!-- Результаты будут добавлены сюда динамически -->
       </div>
     </section>
+
+    <!-- Раздел "О нас" -->
+    <section class="about-section fade-in">
+      <h2><i class="fas fa-info-circle mr-2"></i>О проекте WikiSearch</h2>
+      <p>WikiSearch - это удобный инструмент для поиска и чтения статей из Википедии на различных языках. Наш проект создан для того, чтобы сделать доступ к знаниям простым и удобным.</p>
+      <p>Основные возможности:</p>
+      <ul class="list-disc pl-5 mb-4">
+        <li>Поиск статей на 8 языках</li>
+        <li>9 различных тем оформления</li>
+        <li>Настройка размера окна просмотра</li>
+        <li>Возможность скачивания статей в PDF</li>
+        <li>Адаптивный дизайн для всех устройств</li>
+      </ul>
+      <p>Проект разработан с использованием Wikipedia API и современных веб-технологий. Мы постоянно работаем над улучшением функционала.</p>
+    </section>
   </main>
 
   <!-- Modal окно для просмотра статьи -->
@@ -525,7 +657,7 @@
       <div id="modal-extract" class="mt-2"></div>
       <iframe id="wiki-iframe" class="wiki-frame hidden medium"></iframe>
       <button id="download-pdf-btn" class="download-btn mt-4 hidden" onclick="downloadPDF()">
-        <span id="download-pdf-text">Скачать PDF</span>
+        <i class="fas fa-file-pdf mr-2"></i><span id="download-pdf-text">Скачать PDF</span>
       </button>
     </div>
   </div>
@@ -560,12 +692,21 @@
         themeDark: "Тёмная",
         themeNature: "Природа",
         themeOcean: "Океан",
-        searchLanguageTitle: "Язык поиска"
+        themeSunset: "Закат",
+        themeMidnight: "Полночь",
+        themeForest: "Лес",
+        themeBerry: "Ягода",
+        themeCoffee: "Кофе",
+        searchLanguageTitle: "Язык поиска",
+        aboutTitle: "О проекте WikiSearch",
+        aboutText1: "WikiSearch - это удобный инструмент для поиска и чтения статей из Википедии на различных языках. Наш проект создан для того, чтобы сделать доступ к знаниям простым и удобным.",
+        aboutFeatures: "Основные возможности:",
+        aboutText2: "Проект разработан с использованием Wikipedia API и современных веб-технологий. Мы постоянно работаем над улучшением функционала."
       },
       en: {
         welcomeTitle: "Welcome to WikiSearch!",
         welcomeText: "Search and read Wikipedia articles right here.",
-        searchExample: "e.g.: Moscow, Einstein, Nature",
+        searchExample: "e.g.: London, Einstein, Nature",
         searchPlaceholder: "Search articles...",
         resultsTitle: "Search results:",
         noResults: "No results found.",
@@ -588,7 +729,16 @@
         themeDark: "Dark",
         themeNature: "Nature",
         themeOcean: "Ocean",
-        searchLanguageTitle: "Search language"
+        themeSunset: "Sunset",
+        themeMidnight: "Midnight",
+        themeForest: "Forest",
+        themeBerry: "Berry",
+        themeCoffee: "Coffee",
+        searchLanguageTitle: "Search language",
+        aboutTitle: "About WikiSearch",
+        aboutText1: "WikiSearch is a convenient tool for searching and reading Wikipedia articles in different languages. Our project was created to make access to knowledge simple and convenient.",
+        aboutFeatures: "Main features:",
+        aboutText2: "The project is developed using Wikipedia API and modern web technologies. We are constantly working to improve functionality."
       },
       uk: {
         welcomeTitle: "Ласкаво просимо до WikiSearch!",
@@ -616,12 +766,21 @@
         themeDark: "Темна",
         themeNature: "Природа",
         themeOcean: "Океан",
-        searchLanguageTitle: "Мова пошуку"
+        themeSunset: "Захід сонця",
+        themeMidnight: "Північ",
+        themeForest: "Ліс",
+        themeBerry: "Ягода",
+        themeCoffee: "Кава",
+        searchLanguageTitle: "Мова пошуку",
+        aboutTitle: "Про проект WikiSearch",
+        aboutText1: "WikiSearch - це зручний інструмент для пошуку та читання статей з Вікіпедії різними мовами. Наш проект створений, щоб зробити доступ до знань простим та зручним.",
+        aboutFeatures: "Основні можливості:",
+        aboutText2: "Проєкт розроблено з використанням Wikipedia API та сучасних веб-технологій. Ми постійно працюємо над покращенням функціоналу."
       },
       ja: {
         welcomeTitle: "WikiSearchへようこそ！",
         welcomeText: "ウィキペディアの記事をここで直接検索して読むことができます。",
-        searchExample: "例：モスクワ、アインシュタイン、自然",
+        searchExample: "例：東京、アインシュタイン、自然",
         searchPlaceholder: "記事を検索...",
         resultsTitle: "検索結果:",
         noResults: "結果が見つかりませんでした。",
@@ -644,12 +803,21 @@
         themeDark: "ダーク",
         themeNature: "自然",
         themeOcean: "海",
-        searchLanguageTitle: "検索言語"
+        themeSunset: "夕焼け",
+        themeMidnight: "真夜中",
+        themeForest: "森",
+        themeBerry: "ベリー",
+        themeCoffee: "コーヒー",
+        searchLanguageTitle: "検索言語",
+        aboutTitle: "WikiSearchについて",
+        aboutText1: "WikiSearchは、さまざまな言語でウィキペディアの記事を検索して読むための便利なツールです。私たちのプロジェクトは、知識へのアクセスを簡単で便利にするために作成されました。",
+        aboutFeatures: "主な機能:",
+        aboutText2: "このプロジェクトはWikipedia APIと現代のWebテクノロジーを使用して開発されています。私たちは常に機能の改善に取り組んでいます。"
       },
       de: {
         welcomeTitle: "Willkommen bei WikiSearch!",
         welcomeText: "Suchen und lesen Sie Wikipedia-Artikel direkt hier.",
-        searchExample: "z.B.: Moskau, Einstein, Natur",
+        searchExample: "z.B.: Berlin, Einstein, Natur",
         searchPlaceholder: "Artikel suchen...",
         resultsTitle: "Suchergebnisse:",
         noResults: "Keine Ergebnisse gefunden.",
@@ -672,12 +840,21 @@
         themeDark: "Dunkel",
         themeNature: "Natur",
         themeOcean: "Ozean",
-        searchLanguageTitle: "Suchsprache"
+        themeSunset: "Sonnenuntergang",
+        themeMidnight: "Mitternacht",
+        themeForest: "Wald",
+        themeBerry: "Beere",
+        themeCoffee: "Kaffee",
+        searchLanguageTitle: "Suchsprache",
+        aboutTitle: "Über WikiSearch",
+        aboutText1: "WikiSearch ist ein praktisches Tool zum Suchen und Lesen von Wikipedia-Artikeln in verschiedenen Sprachen. Unser Projekt wurde entwickelt, um den Zugang zu Wissen einfach und bequem zu gestalten.",
+        aboutFeatures: "Hauptfunktionen:",
+        aboutText2: "Das Projekt wurde mit Wikipedia API und modernen Webtechnologien entwickelt. Wir arbeiten ständig an der Verbesserung der Funktionalität."
       },
       fr: {
         welcomeTitle: "Bienvenue sur WikiSearch!",
         welcomeText: "Recherchez et lisez des articles de Wikipédia directement ici.",
-        searchExample: "ex.: Moscou, Einstein, Nature",
+        searchExample: "ex.: Paris, Einstein, Nature",
         searchPlaceholder: "Rechercher des articles...",
         resultsTitle: "Résultats de recherche:",
         noResults: "Aucun résultat trouvé.",
@@ -700,12 +877,21 @@
         themeDark: "Sombre",
         themeNature: "Nature",
         themeOcean: "Océan",
-        searchLanguageTitle: "Langue de recherche"
+        themeSunset: "Coucher de soleil",
+        themeMidnight: "Minuit",
+        themeForest: "Forêt",
+        themeBerry: "Baie",
+        themeCoffee: "Café",
+        searchLanguageTitle: "Langue de recherche",
+        aboutTitle: "À propos de WikiSearch",
+        aboutText1: "WikiSearch est un outil pratique pour rechercher et lire des articles de Wikipédia dans différentes langues. Notre projet a été créé pour rendre l'accès à la connaissance simple et pratique.",
+        aboutFeatures: "Fonctionnalités principales:",
+        aboutText2: "Le projet est développé à l'aide de Wikipedia API et des technologies Web modernes. Nous travaillons constamment à améliorer les fonctionnalités."
       },
       es: {
         welcomeTitle: "¡Bienvenido a WikiSearch!",
         welcomeText: "Busca y lee artículos de Wikipedia directamente aquí.",
-        searchExample: "ej.: Moscú, Einstein, Naturaleza",
+        searchExample: "ej.: Madrid, Einstein, Naturaleza",
         searchPlaceholder: "Buscar artículos...",
         resultsTitle: "Resultados de búsqueda:",
         noResults: "No se encontraron resultados.",
@@ -728,12 +914,21 @@
         themeDark: "Oscuro",
         themeNature: "Naturaleza",
         themeOcean: "Océano",
-        searchLanguageTitle: "Idioma de búsqueda"
+        themeSunset: "Atardecer",
+        themeMidnight: "Medianoche",
+        themeForest: "Bosque",
+        themeBerry: "Baya",
+        themeCoffee: "Café",
+        searchLanguageTitle: "Idioma de búsqueda",
+        aboutTitle: "Acerca de WikiSearch",
+        aboutText1: "WikiSearch es una herramienta conveniente para buscar y leer artículos de Wikipedia en diferentes idiomas. Nuestro proyecto fue creado para hacer que el acceso al conocimiento sea simple y conveniente.",
+        aboutFeatures: "Características principales:",
+        aboutText2: "El proyecto se desarrolla utilizando Wikipedia API y tecnologías web modernas. Trabajamos constantemente para mejorar la funcionalidad."
       },
       zh: {
         welcomeTitle: "欢迎使用WikiSearch!",
         welcomeText: "在这里直接搜索和阅读维基百科文章。",
-        searchExample: "例如：莫斯科，爱因斯坦，自然",
+        searchExample: "例如：北京，爱因斯坦，自然",
         searchPlaceholder: "搜索文章...",
         resultsTitle: "搜索结果:",
         noResults: "未找到结果。",
@@ -756,7 +951,16 @@
         themeDark: "深色",
         themeNature: "自然",
         themeOcean: "海洋",
-        searchLanguageTitle: "搜索语言"
+        themeSunset: "日落",
+        themeMidnight: "午夜",
+        themeForest: "森林",
+        themeBerry: "浆果",
+        themeCoffee: "咖啡",
+        searchLanguageTitle: "搜索语言",
+        aboutTitle: "关于WikiSearch",
+        aboutText1: "WikiSearch是一个方便的工具，可以用不同的语言搜索和阅读维基百科文章。我们的项目旨在使知识获取变得简单方便。",
+        aboutFeatures: "主要功能:",
+        aboutText2: "该项目使用Wikipedia API和现代网络技术开发。我们不断努力改进功能。"
       }
     };
 
@@ -772,6 +976,7 @@
     const backBtn = document.getElementById('back-btn');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const searchLanguageSelect = document.getElementById('search-language-select');
+    const aboutSection = document.querySelector('.about-section');
 
     // Состояние приложения
     let currentViewMode = 'default';
@@ -782,6 +987,18 @@
     let searchLanguage = 'ru';
     let currentTheme = 'light';
     let currentWindowSize = 'medium';
+
+    // Примеры поиска для каждого языка (столица + общие примеры)
+    const searchExamples = {
+      ru: "например: Москва, Эйнштейн, Природа",
+      en: "e.g.: London, Einstein, Nature",
+      uk: "наприклад: Київ, Ейнштейн, Природа",
+      ja: "例：東京、アインシュタイン、自然",
+      de: "z.B.: Berlin, Einstein, Natur",
+      fr: "ex.: Paris, Einstein, Nature",
+      es: "ej.: Madrid, Einstein, Naturaleza",
+      zh: "例如：北京，爱因斯坦，自然"
+    };
 
     // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', () => {
@@ -868,7 +1085,7 @@
       
       document.getElementById('welcome-title').textContent = lang.welcomeTitle;
       document.getElementById('welcome-text').textContent = lang.welcomeText;
-      document.getElementById('search-example').textContent = lang.searchExample;
+      document.getElementById('search-example').textContent = searchExamples[currentLanguage];
       document.getElementById('results-title').textContent = lang.resultsTitle;
       document.getElementById('back-btn').textContent = lang.backButton;
       document.getElementById('download-pdf-text').textContent = lang.downloadPdf;
@@ -886,10 +1103,23 @@
       document.getElementById('theme-dark').textContent = lang.themeDark;
       document.getElementById('theme-nature').textContent = lang.themeNature;
       document.getElementById('theme-ocean').textContent = lang.themeOcean;
+      document.getElementById('theme-sunset').textContent = lang.themeSunset;
+      document.getElementById('theme-midnight').textContent = lang.themeMidnight;
+      document.getElementById('theme-forest').textContent = lang.themeForest;
+      document.getElementById('theme-berry').textContent = lang.themeBerry;
+      document.getElementById('theme-coffee').textContent = lang.themeCoffee;
       document.getElementById('search-language-title').textContent = lang.searchLanguageTitle;
       
       // Обновляем placeholder в поиске
       searchInput.placeholder = lang.searchPlaceholder;
+      
+      // Обновляем раздел "О нас"
+      if (aboutSection) {
+        aboutSection.querySelector('h2').innerHTML = `<i class="fas fa-info-circle mr-2"></i>${lang.aboutTitle}`;
+        aboutSection.querySelectorAll('p')[0].textContent = lang.aboutText1;
+        aboutSection.querySelectorAll('p')[1].textContent = lang.aboutFeatures;
+        aboutSection.querySelectorAll('p')[2].textContent = lang.aboutText2;
+      }
     }
 
     // Закрываем выпадающий список языков при клике вне его
@@ -962,7 +1192,7 @@
 
     function changeTheme(theme) {
       // Удаляем предыдущую тему
-      document.body.classList.remove('light', 'dark', 'nature', 'ocean');
+      document.body.classList.remove('light', 'dark', 'nature', 'ocean', 'sunset', 'midnight', 'forest', 'berry', 'coffee');
       
       // Добавляем новую тему
       document.body.classList.add(theme);
@@ -1144,7 +1374,7 @@
       // Показываем уведомление о начале генерации PDF
       const loadingText = translations[currentLanguage].downloadPdf + '...';
       downloadPdfBtn.disabled = true;
-      downloadPdfBtn.innerHTML = `<span>${loadingText}</span>`;
+      downloadPdfBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i><span>${loadingText}</span>`;
       
       // Генерация PDF
       const worker = html2pdf()
@@ -1153,12 +1383,12 @@
         .save()
         .then(() => {
           downloadPdfBtn.disabled = false;
-          downloadPdfBtn.innerHTML = `<span>${translations[currentLanguage].downloadPdf}</span>`;
+          downloadPdfBtn.innerHTML = `<i class="fas fa-file-pdf mr-2"></i><span>${translations[currentLanguage].downloadPdf}</span>`;
         })
         .catch(err => {
           console.error('Ошибка генерации PDF:', err);
           downloadPdfBtn.disabled = false;
-          downloadPdfBtn.innerHTML = `<span>${translations[currentLanguage].downloadPdf}</span>`;
+          downloadPdfBtn.innerHTML = `<i class="fas fa-file-pdf mr-2"></i><span>${translations[currentLanguage].downloadPdf}</span>`;
           
           // Попробуем альтернативный метод для Telegram
           if (navigator.userAgent.includes('Telegram')) {
@@ -1208,4 +1438,4 @@
     });
   </script>
 </body>
-          </html>
+            </html>
