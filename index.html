@@ -32,6 +32,7 @@
       align-items: flex-start;
       z-index: 50;
       padding: 20px;
+      overflow-y: auto;
     }
 
     .modal.active {
@@ -47,6 +48,7 @@
       width: 100%;
       max-width: 900px;
       position: relative;
+      margin: 20px 0;
     }
 
     .close-btn {
@@ -56,6 +58,7 @@
       cursor: pointer;
       font-size: 1.5rem;
       color: #777;
+      z-index: 10;
     }
 
     .back-btn, .download-btn {
@@ -252,16 +255,57 @@
     .language-option:hover {
       background-color: #f1f1f1;
     }
+
+    /* Мобильные стили */
+    @media (max-width: 768px) {
+      header .container {
+        flex-direction: column;
+        padding: 10px;
+      }
+      
+      #search-form {
+        width: 100%;
+        margin: 10px 0;
+      }
+      
+      .hero h2 {
+        font-size: 1.5rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .modal-content {
+        padding: 15px;
+        margin: 10px;
+      }
+      
+      .wiki-frame {
+        height: 400px;
+      }
+      
+      .language-selector {
+        margin: 10px 0;
+      }
+      
+      .settings-panel {
+        top: 100px;
+        right: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
 
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-10">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-600">WikiSearch</h1>
+    <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600 mb-2 md:mb-0">WikiSearch</h1>
 
-      <form id="search-form" class="relative w-full max-w-lg mx-4">
+      <form id="search-form" class="relative w-full max-w-lg mx-0 md:mx-4">
         <input 
           type="text" 
           id="search-input" 
@@ -273,7 +317,7 @@
         </svg>
       </form>
 
-      <div class="flex items-center">
+      <div class="flex items-center mt-2 md:mt-0">
         <!-- Кнопка выбора языка -->
         <div class="language-selector">
           <button class="language-btn" onclick="toggleLanguageDropdown()">
@@ -484,7 +528,7 @@
     const modalImage = document.getElementById('modal-image');
     const modalExtract = document.getElementById('modal-extract');
     const wikiIframe = document.getElementById('wiki-iframe');
-    const backBtn = document.querySelector('.back-btn');
+    const backBtn = document.getElementById('back-btn');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const searchLanguageSelect = document.getElementById('search-language-select');
 
@@ -541,7 +585,11 @@
 
     function updateLanguageUI() {
       // Обновляем флаг
-      document.getElementById('current-language-flag').src = `https://flagcdn.com/${currentLanguage === 'zh' ? 'cn' : currentLanguage === 'en' ? 'gb' : currentLanguage}.svg`;
+      const flagUrl = `https://flagcdn.com/${currentLanguage === 'zh' ? 'cn' : currentLanguage === 'en' ? 'gb' : currentLanguage}.svg`;
+      document.getElementById('current-language-flag').src = flagUrl;
+      document.getElementById('current-language-flag').onerror = function() {
+        this.src = 'https://flagcdn.com/ru.svg';
+      };
       
       // Обновляем все текстовые элементы
       const lang = translations[currentLanguage];
@@ -556,6 +604,9 @@
       document.getElementById('view-mode-default').textContent = lang.viewModeDefault;
       document.getElementById('view-mode-wiki').textContent = lang.viewModeWiki;
       document.getElementById('search-language-title').textContent = lang.searchLanguageTitle;
+      
+      // Обновляем placeholder в поиске
+      searchInput.placeholder = lang.searchPlaceholder;
     }
 
     // Закрываем выпадающий список языков при клике вне его
@@ -565,6 +616,11 @@
         if (dropdown.classList.contains('show')) {
           dropdown.classList.remove('show');
         }
+      }
+      
+      // Закрываем панель настроек при клике вне ее
+      if (!e.target.closest('.settings-icon') && !e.target.closest('#settings-panel')) {
+        document.getElementById('settings-panel').style.display = 'none';
       }
     });
 
@@ -624,12 +680,14 @@
         modalExtract.classList.add('hidden');
         wikiIframe.classList.remove('hidden');
         modalImage.classList.add('hidden');
+        downloadPdfBtn.classList.add('hidden');
         wikiIframe.src = url;
       } else {
         loadDefaultView(title, encodedTitle);
       }
 
       modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
 
     async function loadDefaultView(title, encodedTitle) {
@@ -640,10 +698,11 @@
         const pageId = Object.keys(data.query.pages)[0];
         const page = data.query.pages[pageId];
 
-        modalTitle.textContent = page.title;
+        modalTitle.textContent = page.title || title;
         modalExtract.innerHTML = `<p>${page.extract || translations[currentLanguage].noText}</p>`;
         modalExtract.classList.remove('hidden');
         wikiIframe.classList.add('hidden');
+        downloadPdfBtn.classList.remove('hidden');
 
         if (page.thumbnail && page.thumbnail.source) {
           modalImage.src = page.thumbnail.source;
@@ -682,6 +741,7 @@
 
     function closeModal() {
       modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
     }
 
     // Поиск статей
@@ -696,7 +756,7 @@
         displayResults(results);
       } catch (error) {
         console.error("Ошибка при поиске:", error);
-        resultsContainer.innerHTML = `<p>${translations[currentLanguage].loadError}</p>`;
+        resultsContainer.innerHTML = `<p class="text-red-500">${translations[currentLanguage].loadError}</p>`;
       }
     }
 
@@ -705,7 +765,7 @@
       resultsContainer.innerHTML = '';
 
       if (results.length === 0) {
-        resultsContainer.innerHTML = `<p>${translations[currentLanguage].noResults}</p>`;
+        resultsContainer.innerHTML = `<p class="text-gray-500">${translations[currentLanguage].noResults}</p>`;
         return;
       }
 
@@ -730,23 +790,32 @@
     // Скачивание PDF через html2pdf.js
     function downloadPDF() {
       const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.maxWidth = '800px';
+      
+      // Копируем контент статьи
+      const title = modalTitle.textContent;
+      const imageSrc = modalImage.src;
+      const extract = modalExtract.innerHTML;
+      
       element.innerHTML = `
-        <h1 style="font-size: 24px; margin-bottom: 10px; color: #1a202c;">${modalTitle.textContent}</h1>
-        ${modalImage.src ? `<img src="${modalImage.src}" style="max-width: 100%; margin-bottom: 15px; border-radius: 4px;">` : ''}
-        <div style="font-size: 16px; line-height: 1.6; color: #4a5568;">${modalExtract.innerHTML}</div>
+        <h1 style="font-size: 24px; margin-bottom: 10px; color: #1a202c;">${title}</h1>
+        ${imageSrc ? `<img src="${imageSrc}" style="max-width: 100%; margin-bottom: 15px; border-radius: 4px;">` : ''}
+        <div style="font-size: 16px; line-height: 1.6; color: #4a5568;">${extract}</div>
         <p style="margin-top: 20px; font-size: 12px; color: #718096;">
-          Источник: Wikipedia (${new Date().toLocaleDateString()})
+          ${translations[currentLanguage].downloadPdf}: Wikipedia (${new Date().toLocaleDateString()})
         </p>
       `;
 
       const opt = {
         margin: 10,
-        filename: `${modalTitle.textContent}.pdf`,
+        filename: `${title}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2,
           logging: true,
-          useCORS: true
+          useCORS: true,
+          allowTaint: true
         },
         jsPDF: { 
           unit: 'mm',
@@ -755,13 +824,24 @@
         }
       };
 
+      // Показываем уведомление о начале генерации PDF
+      const loadingText = translations[currentLanguage].downloadPdf + '...';
+      downloadPdfBtn.disabled = true;
+      downloadPdfBtn.innerHTML = `<span>${loadingText}</span>`;
+      
       // Генерация PDF
       html2pdf()
         .set(opt)
         .from(element)
         .save()
+        .then(() => {
+          downloadPdfBtn.disabled = false;
+          downloadPdfBtn.innerHTML = `<span>${translations[currentLanguage].downloadPdf}</span>`;
+        })
         .catch(err => {
           console.error('Ошибка генерации PDF:', err);
+          downloadPdfBtn.disabled = false;
+          downloadPdfBtn.innerHTML = `<span>${translations[currentLanguage].downloadPdf}</span>`;
           alert(translations[currentLanguage].articleError);
         });
     }
@@ -776,10 +856,16 @@
     });
 
     // Автопоиск при вводе
+    let searchTimeout;
     searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
       const query = searchInput.value.trim();
       if (query.length > 2) {
-        searchArticles(query);
+        searchTimeout = setTimeout(() => {
+          searchArticles(query);
+        }, 500);
+      } else if (query.length === 0) {
+        resultsContainer.innerHTML = '';
       }
     });
 
