@@ -7,8 +7,50 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
+    :root {
+      --primary-color: #3b82f6;
+      --bg-color: #f3f4f6;
+      --text-color: #111827;
+      --card-bg: #ffffff;
+      --header-bg: #ffffff;
+      --input-bg: #ffffff;
+      --modal-bg: #ffffff;
+    }
+
+    .dark {
+      --primary-color: #60a5fa;
+      --bg-color: #111827;
+      --text-color: #f3f4f6;
+      --card-bg: #1f2937;
+      --header-bg: #1f2937;
+      --input-bg: #374151;
+      --modal-bg: #1f2937;
+    }
+
+    .nature {
+      --primary-color: #10b981;
+      --bg-color: #ecfdf5;
+      --text-color: #064e3b;
+      --card-bg: #d1fae5;
+      --header-bg: #a7f3d0;
+      --input-bg: #d1fae5;
+      --modal-bg: #d1fae5;
+    }
+
+    .ocean {
+      --primary-color: #06b6d4;
+      --bg-color: #ecfeff;
+      --text-color: #164e63;
+      --card-bg: #cffafe;
+      --header-bg: #a5f3fc;
+      --input-bg: #cffafe;
+      --modal-bg: #cffafe;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
     }
 
     .fade-in {
@@ -40,7 +82,7 @@
     }
 
     .modal-content {
-      background: white;
+      background: var(--modal-bg);
       padding: 20px;
       border-radius: 12px;
       max-height: 90vh;
@@ -49,6 +91,7 @@
       max-width: 900px;
       position: relative;
       margin: 20px 0;
+      color: var(--text-color);
     }
 
     .close-btn {
@@ -71,21 +114,21 @@
     }
 
     .back-btn {
-      color: #0073e6;
+      color: var(--primary-color);
       background: transparent;
       border: none;
       font-size: 1rem;
     }
 
     .download-btn {
-      background-color: #10b981;
+      background-color: var(--primary-color);
       color: white;
       border: none;
       font-weight: bold;
     }
 
     .download-btn:hover {
-      background-color: #059669;
+      opacity: 0.9;
     }
 
     .settings-icon {
@@ -101,7 +144,7 @@
       position: fixed;
       top: 70px;
       right: 20px;
-      background: white;
+      background: var(--card-bg);
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 15px;
@@ -131,8 +174,24 @@
       border-radius: 8px;
     }
 
+    .wiki-frame.small {
+      height: 400px;
+    }
+
+    .wiki-frame.medium {
+      height: 600px;
+    }
+
+    .wiki-frame.large {
+      height: 800px;
+    }
+
+    .wiki-frame.full {
+      height: calc(100vh - 100px);
+    }
+
     .card {
-      background: #fff;
+      background: var(--card-bg);
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       transition: box-shadow 0.3s;
@@ -158,13 +217,14 @@
     .card-title {
       font-weight: bold;
       font-size: 1.1rem;
-      color: #0073e6;
+      color: var(--primary-color);
       margin-bottom: 10px;
     }
 
     .card-excerpt {
       font-size: 0.9rem;
-      color: #444;
+      color: var(--text-color);
+      opacity: 0.9;
     }
 
     .hero {
@@ -176,19 +236,20 @@
     .hero h2 {
       font-size: 2rem;
       font-weight: bold;
-      color: #1a202c;
+      color: var(--text-color);
     }
 
     .hero p {
       font-size: 1.1rem;
-      color: #4a5568;
+      color: var(--text-color);
+      opacity: 0.8;
       margin: 10px 0 20px;
     }
 
     .search-example {
       display: inline-block;
       padding: 4px 12px;
-      background: #e2e8f0;
+      background: rgba(0,0,0,0.1);
       border-radius: 6px;
       font-style: italic;
       animation: blink 2s infinite;
@@ -199,7 +260,7 @@
       50% { opacity: 0.4; }
     }
 
-    /* Исправленные стили для флагов */
+    /* Стили для флагов */
     .flag-icon {
       width: 24px;
       height: 16px;
@@ -233,7 +294,7 @@
       display: none;
       position: absolute;
       right: 0;
-      background-color: white;
+      background-color: var(--card-bg);
       min-width: 160px;
       box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
       z-index: 70;
@@ -253,7 +314,26 @@
     }
 
     .language-option:hover {
-      background-color: #f1f1f1;
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    /* Стили для переключателя тем */
+    .theme-option {
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+      margin-bottom: 5px;
+    }
+
+    .theme-option:hover {
+      background-color: rgba(0,0,0,0.1);
+    }
+
+    .theme-option.active {
+      background-color: var(--primary-color);
+      color: white;
     }
 
     /* Мобильные стили */
@@ -285,6 +365,18 @@
         height: 400px;
       }
       
+      .wiki-frame.small {
+        height: 300px;
+      }
+      
+      .wiki-frame.medium {
+        height: 400px;
+      }
+      
+      .wiki-frame.large {
+        height: 500px;
+      }
+      
       .language-selector {
         margin: 10px 0;
       }
@@ -298,21 +390,22 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body>
 
   <!-- Header -->
-  <header class="bg-white shadow-md sticky top-0 z-10">
+  <header class="shadow-md sticky top-0 z-10" style="background-color: var(--header-bg);">
     <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-600 mb-2 md:mb-0">WikiSearch</h1>
+      <h1 class="text-2xl font-bold mb-2 md:mb-0" style="color: var(--primary-color);">WikiSearch</h1>
 
       <form id="search-form" class="relative w-full max-w-lg mx-0 md:mx-4">
         <input 
           type="text" 
           id="search-input" 
           placeholder="Поиск статей..." 
-          class="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2"
+          style="background-color: var(--input-bg); color: var(--text-color); border-color: var(--primary-color);"
         />
-        <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="absolute left-3 top-3.5 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--primary-color);">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
       </form>
@@ -329,6 +422,12 @@
             </div>
             <div class="language-option" onclick="changeLanguage('en', 'English')">
               <img src="https://flagcdn.com/gb.svg" class="flag-icon" alt="English"> English
+            </div>
+            <div class="language-option" onclick="changeLanguage('uk', 'Українська')">
+              <img src="https://flagcdn.com/ua.svg" class="flag-icon" alt="Українська"> Українська
+            </div>
+            <div class="language-option" onclick="changeLanguage('ja', '日本語')">
+              <img src="https://flagcdn.com/jp.svg" class="flag-icon" alt="日本語"> 日本語
             </div>
             <div class="language-option" onclick="changeLanguage('de', 'Deutsch')">
               <img src="https://flagcdn.com/de.svg" class="flag-icon" alt="Deutsch"> Deutsch
@@ -347,7 +446,7 @@
 
         <!-- Кнопка настроек -->
         <div class="relative ml-2">
-          <svg onclick="toggleSettings()" class="settings-icon w-6 h-6 text-gray-600 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg onclick="toggleSettings()" class="settings-icon w-6 h-6 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--primary-color);">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
@@ -355,6 +454,8 @@
           <!-- Панель настроек -->
           <div id="settings-panel" class="settings-panel">
             <h3 id="settings-title">Настройки</h3>
+            
+            <h3 id="view-mode-title">Режим просмотра</h3>
             <label>
               <input type="radio" name="viewMode" value="default" checked onchange="changeViewMode(this.value)">
               <span id="view-mode-default">Обычный вид</span>
@@ -364,10 +465,28 @@
               <span id="view-mode-wiki">Как на Вики</span>
             </label>
             
+            <h3 id="window-size-title">Размер окна статьи</h3>
+            <div>
+              <button onclick="changeWindowSize('small')" class="theme-option" id="size-small">Маленький</button>
+              <button onclick="changeWindowSize('medium')" class="theme-option active" id="size-medium">Средний</button>
+              <button onclick="changeWindowSize('large')" class="theme-option" id="size-large">Большой</button>
+              <button onclick="changeWindowSize('full')" class="theme-option" id="size-full">На весь экран</button>
+            </div>
+            
+            <h3 id="theme-title">Тема оформления</h3>
+            <div>
+              <button onclick="changeTheme('light')" class="theme-option active" id="theme-light">Светлая</button>
+              <button onclick="changeTheme('dark')" class="theme-option" id="theme-dark">Тёмная</button>
+              <button onclick="changeTheme('nature')" class="theme-option" id="theme-nature">Природа</button>
+              <button onclick="changeTheme('ocean')" class="theme-option" id="theme-ocean">Океан</button>
+            </div>
+            
             <h3 id="search-language-title">Язык поиска</h3>
-            <select id="search-language-select" class="w-full p-2 border rounded">
+            <select id="search-language-select" class="w-full p-2 border rounded" style="background-color: var(--input-bg); color: var(--text-color);">
               <option value="ru">Русский</option>
               <option value="en">English</option>
+              <option value="uk">Українська</option>
+              <option value="ja">日本語</option>
               <option value="de">Deutsch</option>
               <option value="fr">Français</option>
               <option value="es">Español</option>
@@ -403,8 +522,8 @@
       <button class="back-btn hidden" onclick="goBack()" id="back-btn">← Назад</button>
       <h2 id="modal-title" class="text-2xl font-bold mb-2"></h2>
       <img id="modal-image" class="thumbnail" src="" alt="Изображение статьи" />
-      <div id="modal-extract" class="mt-2 text-gray-700"></div>
-      <iframe id="wiki-iframe" class="wiki-frame hidden"></iframe>
+      <div id="modal-extract" class="mt-2"></div>
+      <iframe id="wiki-iframe" class="wiki-frame hidden medium"></iframe>
       <button id="download-pdf-btn" class="download-btn mt-4 hidden" onclick="downloadPDF()">
         <span id="download-pdf-text">Скачать PDF</span>
       </button>
@@ -428,8 +547,19 @@
         backButton: "← Назад",
         downloadPdf: "Скачать PDF",
         settingsTitle: "Настройки",
+        viewModeTitle: "Режим просмотра",
         viewModeDefault: "Обычный вид",
         viewModeWiki: "Как на Вики",
+        windowSizeTitle: "Размер окна статьи",
+        sizeSmall: "Маленький",
+        sizeMedium: "Средний",
+        sizeLarge: "Большой",
+        sizeFull: "На весь экран",
+        themeTitle: "Тема оформления",
+        themeLight: "Светлая",
+        themeDark: "Тёмная",
+        themeNature: "Природа",
+        themeOcean: "Океан",
         searchLanguageTitle: "Язык поиска"
       },
       en: {
@@ -445,9 +575,76 @@
         backButton: "← Back",
         downloadPdf: "Download PDF",
         settingsTitle: "Settings",
+        viewModeTitle: "View mode",
         viewModeDefault: "Default view",
         viewModeWiki: "Like on Wiki",
+        windowSizeTitle: "Article window size",
+        sizeSmall: "Small",
+        sizeMedium: "Medium",
+        sizeLarge: "Large",
+        sizeFull: "Full screen",
+        themeTitle: "Theme",
+        themeLight: "Light",
+        themeDark: "Dark",
+        themeNature: "Nature",
+        themeOcean: "Ocean",
         searchLanguageTitle: "Search language"
+      },
+      uk: {
+        welcomeTitle: "Ласкаво просимо до WikiSearch!",
+        welcomeText: "Шукайте та читайте статті з Вікіпедії прямо тут.",
+        searchExample: "наприклад: Київ, Ейнштейн, Природа",
+        searchPlaceholder: "Пошук статей...",
+        resultsTitle: "Результати пошуку:",
+        noResults: "Нічого не знайдено.",
+        loadError: "Не вдалося завантажити результати.",
+        articleError: "Не вдалося завантажити статтю.",
+        noText: "Немає доступного тексту.",
+        backButton: "← Назад",
+        downloadPdf: "Завантажити PDF",
+        settingsTitle: "Налаштування",
+        viewModeTitle: "Режим перегляду",
+        viewModeDefault: "Звичайний вигляд",
+        viewModeWiki: "Як у Вікі",
+        windowSizeTitle: "Розмір вікна статті",
+        sizeSmall: "Маленький",
+        sizeMedium: "Середній",
+        sizeLarge: "Великий",
+        sizeFull: "На весь екран",
+        themeTitle: "Тема оформлення",
+        themeLight: "Світла",
+        themeDark: "Темна",
+        themeNature: "Природа",
+        themeOcean: "Океан",
+        searchLanguageTitle: "Мова пошуку"
+      },
+      ja: {
+        welcomeTitle: "WikiSearchへようこそ！",
+        welcomeText: "ウィキペディアの記事をここで直接検索して読むことができます。",
+        searchExample: "例：モスクワ、アインシュタイン、自然",
+        searchPlaceholder: "記事を検索...",
+        resultsTitle: "検索結果:",
+        noResults: "結果が見つかりませんでした。",
+        loadError: "結果の読み込みに失敗しました。",
+        articleError: "記事の読み込みに失敗しました。",
+        noText: "利用可能なテキストがありません。",
+        backButton: "← 戻る",
+        downloadPdf: "PDFをダウンロード",
+        settingsTitle: "設定",
+        viewModeTitle: "表示モード",
+        viewModeDefault: "デフォルト表示",
+        viewModeWiki: "Wikiのように",
+        windowSizeTitle: "記事ウィンドウのサイズ",
+        sizeSmall: "小",
+        sizeMedium: "中",
+        sizeLarge: "大",
+        sizeFull: "全画面",
+        themeTitle: "テーマ",
+        themeLight: "ライト",
+        themeDark: "ダーク",
+        themeNature: "自然",
+        themeOcean: "海",
+        searchLanguageTitle: "検索言語"
       },
       de: {
         welcomeTitle: "Willkommen bei WikiSearch!",
@@ -462,8 +659,19 @@
         backButton: "← Zurück",
         downloadPdf: "PDF herunterladen",
         settingsTitle: "Einstellungen",
+        viewModeTitle: "Anzeigemodus",
         viewModeDefault: "Standardansicht",
         viewModeWiki: "Wie auf Wiki",
+        windowSizeTitle: "Artikel-Fenstergröße",
+        sizeSmall: "Klein",
+        sizeMedium: "Mittel",
+        sizeLarge: "Groß",
+        sizeFull: "Vollbild",
+        themeTitle: "Design",
+        themeLight: "Hell",
+        themeDark: "Dunkel",
+        themeNature: "Natur",
+        themeOcean: "Ozean",
         searchLanguageTitle: "Suchsprache"
       },
       fr: {
@@ -479,8 +687,19 @@
         backButton: "← Retour",
         downloadPdf: "Télécharger PDF",
         settingsTitle: "Paramètres",
+        viewModeTitle: "Mode d'affichage",
         viewModeDefault: "Vue par défaut",
         viewModeWiki: "Comme sur Wiki",
+        windowSizeTitle: "Taille de la fenêtre d'article",
+        sizeSmall: "Petit",
+        sizeMedium: "Moyen",
+        sizeLarge: "Grand",
+        sizeFull: "Plein écran",
+        themeTitle: "Thème",
+        themeLight: "Clair",
+        themeDark: "Sombre",
+        themeNature: "Nature",
+        themeOcean: "Océan",
         searchLanguageTitle: "Langue de recherche"
       },
       es: {
@@ -496,8 +715,19 @@
         backButton: "← Atrás",
         downloadPdf: "Descargar PDF",
         settingsTitle: "Configuración",
+        viewModeTitle: "Modo de visualización",
         viewModeDefault: "Vista predeterminada",
         viewModeWiki: "Como en Wiki",
+        windowSizeTitle: "Tamaño de la ventana del artículo",
+        sizeSmall: "Pequeño",
+        sizeMedium: "Mediano",
+        sizeLarge: "Grande",
+        sizeFull: "Pantalla completa",
+        themeTitle: "Tema",
+        themeLight: "Claro",
+        themeDark: "Oscuro",
+        themeNature: "Naturaleza",
+        themeOcean: "Océano",
         searchLanguageTitle: "Idioma de búsqueda"
       },
       zh: {
@@ -513,8 +743,19 @@
         backButton: "← 返回",
         downloadPdf: "下载PDF",
         settingsTitle: "设置",
+        viewModeTitle: "查看模式",
         viewModeDefault: "默认视图",
         viewModeWiki: "维基样式",
+        windowSizeTitle: "文章窗口大小",
+        sizeSmall: "小",
+        sizeMedium: "中",
+        sizeLarge: "大",
+        sizeFull: "全屏",
+        themeTitle: "主题",
+        themeLight: "浅色",
+        themeDark: "深色",
+        themeNature: "自然",
+        themeOcean: "海洋",
         searchLanguageTitle: "搜索语言"
       }
     };
@@ -539,6 +780,8 @@
     let historyIndex = -1;
     let currentLanguage = 'ru';
     let searchLanguage = 'ru';
+    let currentTheme = 'light';
+    let currentWindowSize = 'medium';
 
     // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', () => {
@@ -546,10 +789,11 @@
       const savedLanguage = localStorage.getItem('wikiSearchLanguage');
       const savedSearchLanguage = localStorage.getItem('wikiSearchSearchLanguage');
       const savedViewMode = localStorage.getItem('wikiSearchViewMode');
+      const savedTheme = localStorage.getItem('wikiSearchTheme');
+      const savedWindowSize = localStorage.getItem('wikiSearchWindowSize');
       
       if (savedLanguage) {
         currentLanguage = savedLanguage;
-        updateLanguageUI();
       }
       
       if (savedSearchLanguage) {
@@ -561,6 +805,34 @@
         currentViewMode = savedViewMode;
         document.querySelector(`input[name="viewMode"][value="${currentViewMode}"]`).checked = true;
       }
+      
+      if (savedTheme) {
+        currentTheme = savedTheme;
+        document.body.classList.add(currentTheme);
+        document.getElementById(`theme-${currentTheme}`).classList.add('active');
+        // Удаляем active у других кнопок тем
+        document.querySelectorAll('.theme-option').forEach(btn => {
+          if (btn.id !== `theme-${currentTheme}`) {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      
+      if (savedWindowSize) {
+        currentWindowSize = savedWindowSize;
+        if (wikiIframe) {
+          wikiIframe.className = `wiki-frame hidden ${currentWindowSize}`;
+        }
+        document.getElementById(`size-${currentWindowSize}`).classList.add('active');
+        // Удаляем active у других кнопок размеров
+        document.querySelectorAll('.theme-option').forEach(btn => {
+          if (btn.id !== `size-${currentWindowSize}` && btn.id.startsWith('size-')) {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      
+      updateLanguageUI();
     });
 
     // Функции для работы с языками
@@ -601,8 +873,19 @@
       document.getElementById('back-btn').textContent = lang.backButton;
       document.getElementById('download-pdf-text').textContent = lang.downloadPdf;
       document.getElementById('settings-title').textContent = lang.settingsTitle;
+      document.getElementById('view-mode-title').textContent = lang.viewModeTitle;
       document.getElementById('view-mode-default').textContent = lang.viewModeDefault;
       document.getElementById('view-mode-wiki').textContent = lang.viewModeWiki;
+      document.getElementById('window-size-title').textContent = lang.windowSizeTitle;
+      document.getElementById('size-small').textContent = lang.sizeSmall;
+      document.getElementById('size-medium').textContent = lang.sizeMedium;
+      document.getElementById('size-large').textContent = lang.sizeLarge;
+      document.getElementById('size-full').textContent = lang.sizeFull;
+      document.getElementById('theme-title').textContent = lang.themeTitle;
+      document.getElementById('theme-light').textContent = lang.themeLight;
+      document.getElementById('theme-dark').textContent = lang.themeDark;
+      document.getElementById('theme-nature').textContent = lang.themeNature;
+      document.getElementById('theme-ocean').textContent = lang.themeOcean;
       document.getElementById('search-language-title').textContent = lang.searchLanguageTitle;
       
       // Обновляем placeholder в поиске
@@ -647,6 +930,7 @@
       if (mode === 'wiki') {
         modalExtract.classList.add('hidden');
         wikiIframe.classList.remove('hidden');
+        wikiIframe.className = `wiki-frame ${currentWindowSize}`;
         modalImage.classList.add('hidden');
         downloadPdfBtn.classList.add('hidden');
         if (currentArticleUrl) {
@@ -658,6 +942,38 @@
         modalImage.classList.remove('hidden');
         downloadPdfBtn.classList.remove('hidden');
       }
+    }
+
+    function changeWindowSize(size) {
+      currentWindowSize = size;
+      localStorage.setItem('wikiSearchWindowSize', size);
+      
+      // Обновляем класс iframe
+      if (wikiIframe && !wikiIframe.classList.contains('hidden')) {
+        wikiIframe.className = `wiki-frame ${size}`;
+      }
+      
+      // Обновляем активную кнопку
+      document.querySelectorAll('[id^="size-"]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`size-${size}`).classList.add('active');
+    }
+
+    function changeTheme(theme) {
+      // Удаляем предыдущую тему
+      document.body.classList.remove('light', 'dark', 'nature', 'ocean');
+      
+      // Добавляем новую тему
+      document.body.classList.add(theme);
+      currentTheme = theme;
+      localStorage.setItem('wikiSearchTheme', theme);
+      
+      // Обновляем активную кнопку
+      document.querySelectorAll('[id^="theme-"]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`theme-${theme}`).classList.add('active');
     }
 
     function openArticle(title) {
@@ -679,6 +995,7 @@
         modalTitle.textContent = title;
         modalExtract.classList.add('hidden');
         wikiIframe.classList.remove('hidden');
+        wikiIframe.className = `wiki-frame ${currentWindowSize}`;
         modalImage.classList.add('hidden');
         downloadPdfBtn.classList.add('hidden');
         wikiIframe.src = url;
@@ -830,7 +1147,7 @@
       downloadPdfBtn.innerHTML = `<span>${loadingText}</span>`;
       
       // Генерация PDF
-      html2pdf()
+      const worker = html2pdf()
         .set(opt)
         .from(element)
         .save()
@@ -842,7 +1159,21 @@
           console.error('Ошибка генерации PDF:', err);
           downloadPdfBtn.disabled = false;
           downloadPdfBtn.innerHTML = `<span>${translations[currentLanguage].downloadPdf}</span>`;
-          alert(translations[currentLanguage].articleError);
+          
+          // Попробуем альтернативный метод для Telegram
+          if (navigator.userAgent.includes('Telegram')) {
+            const blob = new Blob([element.innerHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          } else {
+            alert(translations[currentLanguage].articleError);
+          }
         });
     }
 
@@ -877,4 +1208,4 @@
     });
   </script>
 </body>
-  </html>
+          </html>
