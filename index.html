@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WikiSearch — Поиск статей</title>
-  <script src="https://cdn.tailwindcss.com "></script>
-  <!-- Библиотека для генерации PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js "></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,7 +20,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Модальное окно */
     .modal {
       position: fixed;
       top: 0;
@@ -96,7 +94,6 @@
       transform: rotate(90deg);
     }
 
-    /* Панель настроек */
     .settings-panel {
       position: fixed;
       top: 70px;
@@ -123,7 +120,6 @@
       padding-bottom: 5px;
     }
 
-    /* iframe для отображения "как на Вики" */
     .wiki-frame {
       width: 100%;
       height: 600px;
@@ -132,7 +128,6 @@
       border-radius: 8px;
     }
 
-    /* Карточка статьи */
     .card {
       background: #fff;
       border-radius: 8px;
@@ -169,7 +164,6 @@
       color: #444;
     }
 
-    /* Приветствие */
     .hero {
       text-align: center;
       padding: 20px 0;
@@ -202,15 +196,23 @@
       50% { opacity: 0.4; }
     }
 
-    /* Флаг иконки */
+    /* Исправленные стили для флагов */
     .flag-icon {
-      width: 50px;
-      height: 30px;
-      margin-right: 20px;
+      width: 24px;
+      height: 16px;
+      margin-right: 8px;
       vertical-align: middle;
+      object-fit: cover;
+      border: 1px solid #e2e8f0;
     }
 
-    /* Выпадающий список языков */
+    .language-option img {
+      width: 24px;
+      height: 16px;
+      margin-right: 8px;
+      object-fit: cover;
+    }
+
     .language-selector {
       position: relative;
       display: inline-block;
@@ -539,7 +541,7 @@
 
     function updateLanguageUI() {
       // Обновляем флаг
-      document.getElementById('current-language-flag').src = `https://flagcdn.com/${currentLanguage === 'zh' ? 'cn' : currentLanguage}.svg`;
+      document.getElementById('current-language-flag').src = `https://flagcdn.com/${currentLanguage === 'zh' ? 'cn' : currentLanguage === 'en' ? 'gb' : currentLanguage}.svg`;
       
       // Обновляем все текстовые элементы
       const lang = translations[currentLanguage];
@@ -725,24 +727,43 @@
       });
     }
 
-    // Скачивание PDF
+    // Скачивание PDF через html2pdf.js
     function downloadPDF() {
       const element = document.createElement('div');
       element.innerHTML = `
-        <h1 style="font-size: 24px; margin-bottom: 10px;">${modalTitle.textContent}</h1>
-        ${modalImage.src ? `<img src="${modalImage.src}" style="max-width: 100%; margin-bottom: 10px;">` : ''}
-        <div>${modalExtract.innerHTML}</div>
+        <h1 style="font-size: 24px; margin-bottom: 10px; color: #1a202c;">${modalTitle.textContent}</h1>
+        ${modalImage.src ? `<img src="${modalImage.src}" style="max-width: 100%; margin-bottom: 15px; border-radius: 4px;">` : ''}
+        <div style="font-size: 16px; line-height: 1.6; color: #4a5568;">${modalExtract.innerHTML}</div>
+        <p style="margin-top: 20px; font-size: 12px; color: #718096;">
+          Источник: Wikipedia (${new Date().toLocaleDateString()})
+        </p>
       `;
 
       const opt = {
-        margin:       0.5,
-        filename:     `${modalTitle.textContent}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        margin: 10,
+        filename: `${modalTitle.textContent}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          logging: true,
+          useCORS: true
+        },
+        jsPDF: { 
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait' 
+        }
       };
 
-      html2pdf().set(opt).from(element).save();
+      // Генерация PDF
+      html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .catch(err => {
+          console.error('Ошибка генерации PDF:', err);
+          alert(translations[currentLanguage].articleError);
+        });
     }
 
     // Обработка формы поиска
@@ -770,4 +791,4 @@
     });
   </script>
 </body>
-              </html>
+  </html>
