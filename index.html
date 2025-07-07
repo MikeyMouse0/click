@@ -435,48 +435,6 @@
       line-height: 1.6;
     }
 
-    /* Стили для кнопки озвучки */
-    .voice-btn {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      margin-left: 10px;
-      transition: all 0.3s;
-    }
-
-    .voice-btn:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-
-    .voice-btn.active {
-      background-color: #ef4444;
-    }
-
-    .voice-controls {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-      gap: 10px;
-    }
-
-    .voice-speed {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .voice-speed input {
-      width: 100px;
-    }
-
     /* Мобильные стили */
     @media (max-width: 768px) {
       header .container {
@@ -651,21 +609,6 @@
               <option value="es">Español</option>
               <option value="zh">中文</option>
             </select>
-
-            <h3 id="voice-settings-title">Настройки озвучки</h3>
-            <label>
-              <input type="radio" name="voiceGender" value="female" checked onchange="changeVoiceGender(this.value)">
-              <span id="voice-gender-female">Женский голос</span>
-            </label>
-            <label>
-              <input type="radio" name="voiceGender" value="male" onchange="changeVoiceGender(this.value)">
-              <span id="voice-gender-male">Мужской голос</span>
-            </label>
-            <div class="voice-speed">
-              <span id="voice-speed-label">Скорость:</span>
-              <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" oninput="changeVoiceSpeed(this.value)">
-              <span id="voice-speed-value">1x</span>
-            </div>
           </div>
         </div>
       </div>
@@ -699,7 +642,6 @@
         <li>Настройка размера окна просмотра</li>
         <li>Возможность скачивания статей в PDF</li>
         <li>Адаптивный дизайн для всех устройств</li>
-        <li>Озвучка статей с настройками голоса</li>
       </ul>
       <p>Проект разработан с использованием Wikipedia API и современных веб-технологий. Мы постоянно работаем над улучшением функционала.</p>
     </section>
@@ -714,12 +656,6 @@
       <img id="modal-image" class="thumbnail" src="" alt="Изображение статьи" />
       <div id="modal-extract" class="mt-2"></div>
       <iframe id="wiki-iframe" class="wiki-frame hidden medium"></iframe>
-      <div class="voice-controls">
-        <button id="voice-btn" class="voice-btn" onclick="toggleVoice()">
-          <i class="fas fa-volume-up"></i>
-        </button>
-        <div id="voice-status">Готов к озвучке</div>
-      </div>
       <button id="download-pdf-btn" class="download-btn mt-4 hidden" onclick="downloadPDF()">
         <i class="fas fa-file-pdf mr-2"></i><span id="download-pdf-text">Скачать PDF</span>
       </button>
@@ -762,14 +698,6 @@
         themeBerry: "Ягода",
         themeCoffee: "Кофе",
         searchLanguageTitle: "Язык поиска",
-        voiceSettingsTitle: "Настройки озвучки",
-        voiceGenderFemale: "Женский голос",
-        voiceGenderMale: "Мужской голос",
-        voiceSpeedLabel: "Скорость:",
-        voiceReady: "Готов к озвучке",
-        voicePlaying: "Идет озвучка...",
-        voicePaused: "Пауза",
-        voiceStopped: "Остановлено",
         aboutTitle: "О проекте WikiSearch",
         aboutText1: "WikiSearch - это удобный инструмент для поиска и чтения статей из Википедии на различных языках. Наш проект создан для того, чтобы сделать доступ к знаниям простым и удобным.",
         aboutFeatures: "Основные возможности:",
@@ -807,14 +735,6 @@
         themeBerry: "Berry",
         themeCoffee: "Coffee",
         searchLanguageTitle: "Search language",
-        voiceSettingsTitle: "Voice settings",
-        voiceGenderFemale: "Female voice",
-        voiceGenderMale: "Male voice",
-        voiceSpeedLabel: "Speed:",
-        voiceReady: "Ready to speak",
-        voicePlaying: "Speaking...",
-        voicePaused: "Paused",
-        voiceStopped: "Stopped",
         aboutTitle: "About WikiSearch",
         aboutText1: "WikiSearch is a convenient tool for searching and reading Wikipedia articles in different languages. Our project was created to make access to knowledge simple and convenient.",
         aboutFeatures: "Main features:",
@@ -852,14 +772,6 @@
         themeBerry: "Ягода",
         themeCoffee: "Кава",
         searchLanguageTitle: "Мова пошуку",
-        voiceSettingsTitle: "Налаштування озвучення",
-        voiceGenderFemale: "Жіночий голос",
-        voiceGenderMale: "Чоловічий голос",
-        voiceSpeedLabel: "Швидкість:",
-        voiceReady: "Готовий до озвучення",
-        voicePlaying: "Йде озвучення...",
-        voicePaused: "Пауза",
-        voiceStopped: "Зупинено",
         aboutTitle: "Про проект WikiSearch",
         aboutText1: "WikiSearch - це зручний інструмент для пошуку та читання статей з Вікіпедії різними мовами. Наш проект створений, щоб зробити доступ до знань простим та зручним.",
         aboutFeatures: "Основні можливості:",
@@ -897,14 +809,6 @@
         themeBerry: "ベリー",
         themeCoffee: "コーヒー",
         searchLanguageTitle: "検索言語",
-        voiceSettingsTitle: "音声設定",
-        voiceGenderFemale: "女性の声",
-        voiceGenderMale: "男性の声",
-        voiceSpeedLabel: "速度:",
-        voiceReady: "読み上げ準備完了",
-        voicePlaying: "読み上げ中...",
-        voicePaused: "一時停止",
-        voiceStopped: "停止",
         aboutTitle: "WikiSearchについて",
         aboutText1: "WikiSearchは、さまざまな言語でウィキペディアの記事を検索して読むための便利なツールです。私たちのプロジェクトは、知識へのアクセスを簡単で便利にするために作成されました。",
         aboutFeatures: "主な機能:",
@@ -942,14 +846,6 @@
         themeBerry: "Beere",
         themeCoffee: "Kaffee",
         searchLanguageTitle: "Suchsprache",
-        voiceSettingsTitle: "Spracheinstellungen",
-        voiceGenderFemale: "Weibliche Stimme",
-        voiceGenderMale: "Männliche Stimme",
-        voiceSpeedLabel: "Geschwindigkeit:",
-        voiceReady: "Bereit zum Vorlesen",
-        voicePlaying: "Wird vorgelesen...",
-        voicePaused: "Pausiert",
-        voiceStopped: "Gestoppt",
         aboutTitle: "Über WikiSearch",
         aboutText1: "WikiSearch ist ein praktisches Tool zum Suchen und Lesen von Wikipedia-Artikeln in verschiedenen Sprachen. Unser Projekt wurde entwickelt, um den Zugang zu Wissen einfach und bequem zu gestalten.",
         aboutFeatures: "Hauptfunktionen:",
@@ -987,14 +883,6 @@
         themeBerry: "Baie",
         themeCoffee: "Café",
         searchLanguageTitle: "Langue de recherche",
-        voiceSettingsTitle: "Paramètres vocaux",
-        voiceGenderFemale: "Voix féminine",
-        voiceGenderMale: "Voix masculine",
-        voiceSpeedLabel: "Vitesse:",
-        voiceReady: "Prêt à lire",
-        voicePlaying: "Lecture en cours...",
-        voicePaused: "En pause",
-        voiceStopped: "Arrêté",
         aboutTitle: "À propos de WikiSearch",
         aboutText1: "WikiSearch est un outil pratique pour rechercher et lire des articles de Wikipédia dans différentes langues. Notre projet a été créé pour rendre l'accès à la connaissance simple et pratique.",
         aboutFeatures: "Fonctionnalités principales:",
@@ -1032,14 +920,6 @@
         themeBerry: "Baya",
         themeCoffee: "Café",
         searchLanguageTitle: "Idioma de búsqueda",
-        voiceSettingsTitle: "Configuración de voz",
-        voiceGenderFemale: "Voz femenina",
-        voiceGenderMale: "Voz masculina",
-        voiceSpeedLabel: "Velocidad:",
-        voiceReady: "Listo para leer",
-        voicePlaying: "Leyendo...",
-        voicePaused: "En pausa",
-        voiceStopped: "Detenido",
         aboutTitle: "Acerca de WikiSearch",
         aboutText1: "WikiSearch es una herramienta conveniente para buscar y leer artículos de Wikipedia en diferentes idiomas. Nuestro proyecto fue creado para hacer que el acceso al conocimiento sea simple y conveniente.",
         aboutFeatures: "Características principales:",
@@ -1077,14 +957,6 @@
         themeBerry: "浆果",
         themeCoffee: "咖啡",
         searchLanguageTitle: "搜索语言",
-        voiceSettingsTitle: "语音设置",
-        voiceGenderFemale: "女声",
-        voiceGenderMale: "男声",
-        voiceSpeedLabel: "速度:",
-        voiceReady: "准备朗读",
-        voicePlaying: "朗读中...",
-        voicePaused: "暂停",
-        voiceStopped: "已停止",
         aboutTitle: "关于WikiSearch",
         aboutText1: "WikiSearch是一个方便的工具，可以用不同的语言搜索和阅读维基百科文章。我们的项目旨在使知识获取变得简单方便。",
         aboutFeatures: "主要功能:",
@@ -1105,10 +977,6 @@
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const searchLanguageSelect = document.getElementById('search-language-select');
     const aboutSection = document.querySelector('.about-section');
-    const voiceBtn = document.getElementById('voice-btn');
-    const voiceStatus = document.getElementById('voice-status');
-    const voiceSpeedInput = document.getElementById('voice-speed');
-    const voiceSpeedValue = document.getElementById('voice-speed-value');
 
     // Состояние приложения
     let currentViewMode = 'default';
@@ -1119,46 +987,17 @@
     let searchLanguage = 'ru';
     let currentTheme = 'light';
     let currentWindowSize = 'medium';
-    let speechSynthesis = window.speechSynthesis;
-    let speechUtterance = null;
-    let isSpeaking = false;
-    let voiceGender = 'female';
-    let voiceSpeed = 1;
 
-    // Голоса для разных языков
-    const voiceSettings = {
-      ru: {
-        female: { lang: 'ru-RU', name: 'Google русский' },
-        male: { lang: 'ru-RU', name: 'Microsoft Pavel - Russian (Russia)' }
-      },
-      en: {
-        female: { lang: 'en-US', name: 'Google US English' },
-        male: { lang: 'en-US', name: 'Microsoft David - English (United States)' }
-      },
-      uk: {
-        female: { lang: 'uk-UA', name: 'Google українська' },
-        male: { lang: 'uk-UA', name: null }
-      },
-      ja: {
-        female: { lang: 'ja-JP', name: 'Google 日本語' },
-        male: { lang: 'ja-JP', name: 'Microsoft Ichiro - Japanese (Japan)' }
-      },
-      de: {
-        female: { lang: 'de-DE', name: 'Google Deutsch' },
-        male: { lang: 'de-DE', name: 'Microsoft Stefan - German (Germany)' }
-      },
-      fr: {
-        female: { lang: 'fr-FR', name: 'Google français' },
-        male: { lang: 'fr-FR', name: 'Microsoft Paul - French (France)' }
-      },
-      es: {
-        female: { lang: 'es-ES', name: 'Google español' },
-        male: { lang: 'es-ES', name: 'Microsoft Pablo - Spanish (Spain)' }
-      },
-      zh: {
-        female: { lang: 'zh-CN', name: 'Google 普通话（中国大陆）' },
-        male: { lang: 'zh-CN', name: 'Microsoft Kangkang - Chinese (Simplified, China)' }
-      }
+    // Примеры поиска для каждого языка (столица + общие примеры)
+    const searchExamples = {
+      ru: "например: Москва, Эйнштейн, Природа",
+      en: "e.g.: London, Einstein, Nature",
+      uk: "наприклад: Київ, Ейнштейн, Природа",
+      ja: "例：東京、アインシュタイン、自然",
+      de: "z.B.: Berlin, Einstein, Natur",
+      fr: "ex.: Paris, Einstein, Nature",
+      es: "ej.: Madrid, Einstein, Naturaleza",
+      zh: "例如：北京，爱因斯坦，自然"
     };
 
     // Инициализация при загрузке страницы
@@ -1169,8 +1008,6 @@
       const savedViewMode = localStorage.getItem('wikiSearchViewMode');
       const savedTheme = localStorage.getItem('wikiSearchTheme');
       const savedWindowSize = localStorage.getItem('wikiSearchWindowSize');
-      const savedVoiceGender = localStorage.getItem('wikiSearchVoiceGender');
-      const savedVoiceSpeed = localStorage.getItem('wikiSearchVoiceSpeed');
       
       if (savedLanguage) {
         currentLanguage = savedLanguage;
@@ -1212,17 +1049,6 @@
         });
       }
       
-      if (savedVoiceGender) {
-        voiceGender = savedVoiceGender;
-        document.querySelector(`input[name="voiceGender"][value="${voiceGender}"]`).checked = true;
-      }
-      
-      if (savedVoiceSpeed) {
-        voiceSpeed = parseFloat(savedVoiceSpeed);
-        voiceSpeedInput.value = voiceSpeed;
-        voiceSpeedValue.textContent = `${voiceSpeed}x`;
-      }
-      
       updateLanguageUI();
     });
 
@@ -1244,27 +1070,28 @@
       if (searchInput.value.trim().length > 0) {
         searchArticles(searchInput.value.trim());
       }
-      
-      // Останавливаем озвучку при смене языка
-      stopVoice();
     }
 
     function updateLanguageUI() {
-      // Обновляем флаг
+      // Обновляем флаг с явным сопоставлением языков и кодов флагов
       const flagMap = {
-        ru: 'ru',
-        en: 'gb',
-        uk: 'ua',
-        ja: 'jp',
-        de: 'de',
-        fr: 'fr',
-        es: 'es',
-        zh: 'cn'
+        'ru': 'ru',
+        'en': 'gb', // Английский - флаг Великобритании
+        'uk': 'ua', // Украинский
+        'ja': 'jp', // Японский
+        'de': 'de',
+        'fr': 'fr',
+        'es': 'es',
+        'zh': 'cn'  // Китайский
       };
       
-      const flagUrl = `https://flagcdn.com/${flagMap[currentLanguage]}.svg`;
-      document.getElementById('current-language-flag').src = flagUrl;
-      document.getElementById('current-language-flag').onerror = function() {
+      const flagCode = flagMap[currentLanguage] || 'ru';
+      const flagUrl = `https://flagcdn.com/${flagCode}.svg`;
+      const flagImg = document.getElementById('current-language-flag');
+      
+      flagImg.src = flagUrl;
+      flagImg.onerror = function() {
+        // Если флаг не загрузился, используем флаг по умолчанию (Россия)
         this.src = 'https://flagcdn.com/ru.svg';
       };
       
@@ -1297,10 +1124,6 @@
       document.getElementById('theme-berry').textContent = lang.themeBerry;
       document.getElementById('theme-coffee').textContent = lang.themeCoffee;
       document.getElementById('search-language-title').textContent = lang.searchLanguageTitle;
-      document.getElementById('voice-settings-title').textContent = lang.voiceSettingsTitle;
-      document.getElementById('voice-gender-female').textContent = lang.voiceGenderFemale;
-      document.getElementById('voice-gender-male').textContent = lang.voiceGenderMale;
-      document.getElementById('voice-speed-label').textContent = lang.voiceSpeedLabel;
       
       // Обновляем placeholder в поиске
       searchInput.placeholder = lang.searchPlaceholder;
@@ -1311,15 +1134,6 @@
         aboutSection.querySelectorAll('p')[0].textContent = lang.aboutText1;
         aboutSection.querySelectorAll('p')[1].textContent = lang.aboutFeatures;
         aboutSection.querySelectorAll('p')[2].textContent = lang.aboutText2;
-      }
-      
-      // Обновляем статус озвучки
-      if (voiceStatus) {
-        if (isSpeaking) {
-          voiceStatus.textContent = lang.voicePlaying;
-        } else {
-          voiceStatus.textContent = lang.voiceReady;
-        }
       }
     }
 
@@ -1373,9 +1187,6 @@
         modalImage.classList.remove('hidden');
         downloadPdfBtn.classList.remove('hidden');
       }
-      
-      // Останавливаем озвучку при смене режима просмотра
-      stopVoice();
     }
 
     function changeWindowSize(size) {
@@ -1410,34 +1221,7 @@
       document.getElementById(`theme-${theme}`).classList.add('active');
     }
 
-    function changeVoiceGender(gender) {
-      voiceGender = gender;
-      localStorage.setItem('wikiSearchVoiceGender', gender);
-      
-      // Если озвучка активна, перезапускаем с новым голосом
-      if (isSpeaking) {
-        stopVoice();
-        startVoice();
-      }
-    }
-
-    function changeVoiceSpeed(speed) {
-      voiceSpeed = parseFloat(speed);
-      localStorage.setItem('wikiSearchVoiceSpeed', voiceSpeed);
-      voiceSpeedValue.textContent = `${voiceSpeed}x`;
-      
-      // Если озвучка активна, обновляем скорость
-      if (isSpeaking && speechUtterance) {
-        speechUtterance.rate = voiceSpeed;
-        speechSynthesis.cancel();
-        speechSynthesis.speak(speechUtterance);
-      }
-    }
-
     function openArticle(title) {
-      // Останавливаем текущую озвучку
-      stopVoice();
-      
       const encodedTitle = encodeURIComponent(title).replace(/ /g, '_');
       const url = `https://${searchLanguage}.wikipedia.org/wiki/${encodedTitle}`;
       currentArticleUrl = url;
@@ -1488,10 +1272,6 @@
         } else {
           modalImage.classList.add('hidden');
         }
-        
-        // Обновляем статус озвучки
-        voiceStatus.textContent = translations[currentLanguage].voiceReady;
-        voiceBtn.classList.remove('active');
       } catch (error) {
         console.error("Ошибка загрузки статьи:", error);
         modalExtract.innerHTML = `<p>${translations[currentLanguage].articleError}</p>`;
@@ -1515,9 +1295,6 @@
 
         updateNavigationButtons();
       }
-      
-      // Останавливаем озвучку при возврате
-      stopVoice();
     }
 
     function updateNavigationButtons() {
@@ -1527,100 +1304,7 @@
     function closeModal() {
       modal.classList.remove('active');
       document.body.style.overflow = 'auto';
-      
-      // Останавливаем озвучку при закрытии модального окна
-      stopVoice();
     }
-
-    // Функции для работы с озвучкой
-    function toggleVoice() {
-      if (isSpeaking) {
-        pauseVoice();
-      } else {
-        startVoice();
-      }
-    }
-
-    function startVoice() {
-      if (currentViewMode === 'wiki' || !modalExtract.textContent.trim()) {
-        return;
-      }
-
-      // Получаем текст для озвучки
-      const text = modalExtract.textContent.trim();
-      
-      // Создаем новое высказывание
-      speechUtterance = new SpeechSynthesisUtterance(text);
-      
-      // Устанавливаем язык и голос
-      const lang = currentLanguage === 'zh' ? 'zh-CN' : 
-                  currentLanguage === 'en' ? 'en-US' : 
-                  `${currentLanguage}-${currentLanguage.toUpperCase()}`;
-      
-      speechUtterance.lang = lang;
-      speechUtterance.rate = voiceSpeed;
-      
-      // Находим подходящий голос
-      const voices = speechSynthesis.getVoices();
-      const voiceSetting = voiceSettings[currentLanguage]?.[voiceGender] || voiceSettings[currentLanguage]?.female;
-      
-      if (voiceSetting) {
-        const voice = voices.find(v => 
-          v.lang === voiceSetting.lang && 
-          (voiceSetting.name ? v.name.includes(voiceSetting.name) : true)
-        );
-        
-        if (voice) {
-          speechUtterance.voice = voice;
-        }
-      }
-      
-      // Обработчики событий
-      speechUtterance.onstart = () => {
-        isSpeaking = true;
-        voiceBtn.classList.add('active');
-        voiceStatus.textContent = translations[currentLanguage].voicePlaying;
-      };
-      
-      speechUtterance.onend = () => {
-        isSpeaking = false;
-        voiceBtn.classList.remove('active');
-        voiceStatus.textContent = translations[currentLanguage].voiceReady;
-      };
-      
-      speechUtterance.onerror = (event) => {
-        console.error('Ошибка озвучки:', event);
-        isSpeaking = false;
-        voiceBtn.classList.remove('active');
-        voiceStatus.textContent = translations[currentLanguage].voiceStopped;
-      };
-      
-      // Запускаем озвучку
-      speechSynthesis.speak(speechUtterance);
-    }
-
-    function pauseVoice() {
-      if (isSpeaking) {
-        speechSynthesis.pause();
-        isSpeaking = false;
-        voiceBtn.classList.remove('active');
-        voiceStatus.textContent = translations[currentLanguage].voicePaused;
-      }
-    }
-
-    function stopVoice() {
-      speechSynthesis.cancel();
-      isSpeaking = false;
-      voiceBtn.classList.remove('active');
-      if (voiceStatus) {
-        voiceStatus.textContent = translations[currentLanguage].voiceReady;
-      }
-    }
-
-    // Инициализация голосов при загрузке страницы
-    speechSynthesis.onvoiceschanged = function() {
-      console.log('Голоса загружены:', speechSynthesis.getVoices());
-    };
 
     // Поиск статей
     async function searchArticles(query) {
