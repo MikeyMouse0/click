@@ -723,9 +723,6 @@
       <button id="download-pdf-btn" class="download-btn mt-4 hidden" onclick="downloadPDF()">
         <i class="fas fa-file-pdf mr-2"></i><span id="download-pdf-text">Скачать PDF</span>
       </button>
-      <button id="open-in-browser-btn" class="download-btn mt-4" onclick="openInBrowser()" style="background-color: #10b981;">
-        <i class="fas fa-external-link-alt mr-2"></i><span id="open-in-browser-text">Открыть в браузере</span>
-      </button>
     </div>
   </div>
 
@@ -745,7 +742,6 @@
         noText: "Нет доступного текста.",
         backButton: "← Назад",
         downloadPdf: "Скачать PDF",
-        openInBrowser: "Открыть в браузере",
         settingsTitle: "Настройки",
         viewModeTitle: "Режим просмотра",
         viewModeDefault: "Обычный вид",
@@ -791,7 +787,6 @@
         noText: "No available text.",
         backButton: "← Back",
         downloadPdf: "Download PDF",
-        openInBrowser: "Open in browser",
         settingsTitle: "Settings",
         viewModeTitle: "View mode",
         viewModeDefault: "Default view",
@@ -837,7 +832,6 @@
         noText: "Немає доступного тексту.",
         backButton: "← Назад",
         downloadPdf: "Завантажити PDF",
-        openInBrowser: "Відкрити у браузері",
         settingsTitle: "Налаштування",
         viewModeTitle: "Режим перегляду",
         viewModeDefault: "Звичайний вигляд",
@@ -883,7 +877,6 @@
         noText: "利用可能なテキストがありません。",
         backButton: "← 戻る",
         downloadPdf: "PDFをダウンロード",
-        openInBrowser: "ブラウザで開く",
         settingsTitle: "設定",
         viewModeTitle: "表示モード",
         viewModeDefault: "デフォルト表示",
@@ -929,7 +922,6 @@
         noText: "Kein verfügbarer Text.",
         backButton: "← Zurück",
         downloadPdf: "PDF herunterladen",
-        openInBrowser: "Im Browser öffnen",
         settingsTitle: "Einstellungen",
         viewModeTitle: "Anzeigemodus",
         viewModeDefault: "Standardansicht",
@@ -975,7 +967,6 @@
         noText: "Pas de texte disponible.",
         backButton: "← Retour",
         downloadPdf: "Télécharger PDF",
-        openInBrowser: "Ouvrir dans le navigateur",
         settingsTitle: "Paramètres",
         viewModeTitle: "Mode d'affichage",
         viewModeDefault: "Vue par défaut",
@@ -1021,7 +1012,6 @@
         noText: "No hay texto disponible.",
         backButton: "← Atrás",
         downloadPdf: "Descargar PDF",
-        openInBrowser: "Abrir en el navegador",
         settingsTitle: "Configuración",
         viewModeTitle: "Modo de visualización",
         viewModeDefault: "Vista predeterminada",
@@ -1067,7 +1057,6 @@
         noText: "没有可用文本。",
         backButton: "← 返回",
         downloadPdf: "下载PDF",
-        openInBrowser: "在浏览器中打开",
         settingsTitle: "设置",
         viewModeTitle: "查看模式",
         viewModeDefault: "默认视图",
@@ -1103,18 +1092,6 @@
       }
     };
 
-    // Примеры поиска для разных языков
-    const searchExamples = {
-      ru: "например: Москва, Эйнштейн, Природа",
-      en: "e.g.: London, Einstein, Nature",
-      uk: "наприклад: Київ, Ейнштейн, Природа",
-      ja: "例：東京、アインシュタイン、自然",
-      de: "z.B.: Berlin, Einstein, Natur",
-      fr: "ex.: Paris, Einstein, Nature",
-      es: "ej.: Madrid, Einstein, Naturaleza",
-      zh: "例如：北京，爱因斯坦，自然"
-    };
-
     // Элементы DOM
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
@@ -1126,7 +1103,6 @@
     const wikiIframe = document.getElementById('wiki-iframe');
     const backBtn = document.getElementById('back-btn');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
-    const openInBrowserBtn = document.getElementById('open-in-browser-btn');
     const searchLanguageSelect = document.getElementById('search-language-select');
     const aboutSection = document.querySelector('.about-section');
     const voiceBtn = document.getElementById('voice-btn');
@@ -1248,13 +1224,6 @@
       }
       
       updateLanguageUI();
-      
-      // Загружаем голоса, если они еще не загружены
-      if (speechSynthesis.getVoices().length === 0) {
-        speechSynthesis.onvoiceschanged = function() {
-          console.log('Голоса загружены:', speechSynthesis.getVoices());
-        };
-      }
     });
 
     // Функции для работы с языками
@@ -1270,7 +1239,6 @@
       
       // Обновляем placeholder в поиске
       searchInput.placeholder = translations[lang].searchPlaceholder;
-      document.getElementById('search-example').textContent = searchExamples[lang];
       
       // Если был выполнен поиск, обновляем результаты
       if (searchInput.value.trim().length > 0) {
@@ -1309,7 +1277,6 @@
       document.getElementById('results-title').textContent = lang.resultsTitle;
       document.getElementById('back-btn').textContent = lang.backButton;
       document.getElementById('download-pdf-text').textContent = lang.downloadPdf;
-      document.getElementById('open-in-browser-text').textContent = lang.openInBrowser;
       document.getElementById('settings-title').textContent = lang.settingsTitle;
       document.getElementById('view-mode-title').textContent = lang.viewModeTitle;
       document.getElementById('view-mode-default').textContent = lang.viewModeDefault;
@@ -1565,20 +1532,6 @@
       stopVoice();
     }
 
-    // Функция для открытия статьи в браузере
-    function openInBrowser() {
-      if (currentArticleUrl) {
-        // Проверяем, находимся ли мы в Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-          // Открываем ссылку через Telegram WebApp
-          Telegram.WebApp.openLink(currentArticleUrl);
-        } else {
-          // Открываем в новом окне для обычных браузеров
-          window.open(currentArticleUrl, '_blank');
-        }
-      }
-    }
-
     // Функции для работы с озвучкой
     function toggleVoice() {
       if (isSpeaking) {
@@ -1664,6 +1617,11 @@
       }
     }
 
+    // Инициализация голосов при загрузке страницы
+    speechSynthesis.onvoiceschanged = function() {
+      console.log('Голоса загружены:', speechSynthesis.getVoices());
+    };
+
     // Поиск статей
     async function searchArticles(query) {
       const url = `https://${searchLanguage}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
@@ -1671,17 +1629,12 @@
       try {
         const response = await fetch(url);
         const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error.info);
-        }
-        
-        const results = data.query?.search || [];
+        const results = data.query.search;
 
         displayResults(results);
       } catch (error) {
         console.error("Ошибка при поиске:", error);
-        resultsContainer.innerHTML = `<p class="text-red-500">${translations[currentLanguage].loadError}: ${error.message}</p>`;
+        resultsContainer.innerHTML = `<p class="text-red-500">${translations[currentLanguage].loadError}</p>`;
       }
     }
 
@@ -1696,8 +1649,7 @@
 
       results.forEach(result => {
         const title = result.title;
-        // Удаляем HTML-теги из сниппета
-        const snippet = result.snippet.replace(/<[^>]*>/g, '');
+        const snippet = result.snippet.replace(/<\/?span[^>]*>/g, '');
 
         const card = document.createElement('div');
         card.className = "card";
@@ -1770,8 +1722,16 @@
           downloadPdfBtn.innerHTML = `<i class="fas fa-file-pdf mr-2"></i><span>${translations[currentLanguage].downloadPdf}</span>`;
           
           // Попробуем альтернативный метод для Telegram
-          if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.openLink(currentArticleUrl);
+          if (navigator.userAgent.includes('Telegram')) {
+            const blob = new Blob([element.innerHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
           } else {
             alert(translations[currentLanguage].articleError);
           }
